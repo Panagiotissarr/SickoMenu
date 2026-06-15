@@ -1,8 +1,10 @@
+using Hazel;
+
 namespace SickoMenu.RPC;
 
 public static class CustomRpcHandler
 {
-    private static readonly Dictionary<byte, Func<MessageReader, bool>> CustomHandlers = [];
+    private static readonly Dictionary<byte, Func<MessageReader, bool>> CustomHandlers = new Dictionary<byte, Func<MessageReader, bool>>();
     private static readonly object LockObj = new();
 
     static CustomRpcHandler()
@@ -83,7 +85,7 @@ public static class CustomRpcHandler
             var targetId = reader.ReadByte();
             var roleType = reader.ReadByte();
             SickoMenuPlugin.PluginLogger.LogInfo(
-                $"Force role: P{targetId} -> {(RoleTypes)roleType}");
+                $"Force role: P{targetId} -> {roleType}");
             return true;
         }
         catch
@@ -121,7 +123,7 @@ public static class CustomRpcHandler
         });
     }
 
-    public static void SendForceRole(byte targetId, RoleTypes role)
+    public static void SendForceRole(byte targetId, byte role)
     {
         SendCustomRpc(2, writer =>
         {

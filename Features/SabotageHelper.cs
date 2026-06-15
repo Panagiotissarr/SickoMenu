@@ -10,7 +10,7 @@ public static class SabotageHelper
             if (shipStatus == null) return;
 
             shipStatus.RpcUpdateSystem(
-                UnityEngine.GameOptions.SystemTypes.Sabotage,
+                SystemTypes.Sabotage,
                 128
             );
 
@@ -25,7 +25,7 @@ public static class SabotageHelper
     public static void RepairReactor()
     {
         RepairSystem(
-            UnityEngine.GameOptions.SystemTypes.Reactor,
+            SystemTypes.Reactor,
             0
         );
     }
@@ -33,7 +33,7 @@ public static class SabotageHelper
     public static void RepairOxygen()
     {
         RepairSystem(
-            UnityEngine.GameOptions.SystemTypes.LifeSupp,
+            SystemTypes.LifeSupp,
             0
         );
     }
@@ -41,7 +41,7 @@ public static class SabotageHelper
     public static void RepairLights()
     {
         RepairSystem(
-            UnityEngine.GameOptions.SystemTypes.Electrical,
+            SystemTypes.Electrical,
             0
         );
     }
@@ -49,13 +49,13 @@ public static class SabotageHelper
     public static void RepairComms()
     {
         RepairSystem(
-            UnityEngine.GameOptions.SystemTypes.Comms,
+            SystemTypes.Comms,
             0
         );
     }
 
     private static void RepairSystem(
-        UnityEngine.GameOptions.SystemTypes systemType,
+        SystemTypes systemType,
         int amount)
     {
         try
@@ -63,7 +63,7 @@ public static class SabotageHelper
             var shipStatus = ShipStatus.Instance;
             if (shipStatus == null) return;
 
-            shipStatus.RpcUpdateSystem(systemType, amount);
+            shipStatus.RpcUpdateSystem(systemType, (byte)amount);
         }
         catch (System.Exception ex)
         {

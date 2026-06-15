@@ -1,3 +1,4 @@
+using Hazel;
 using SickoMenu.Utils;
 
 namespace SickoMenu.RPC;
@@ -31,7 +32,7 @@ public enum CustomRpcCalls : byte
 
 public static class RpcHandler
 {
-    private static readonly Dictionary<byte, Action<MessageReader>> Handlers = [];
+    private static readonly Dictionary<byte, Action<MessageReader>> Handlers = new Dictionary<byte, Action<MessageReader>>();
     private static readonly object LockObj = new();
 
     static RpcHandler()
@@ -104,17 +105,11 @@ public static class RpcHandler
 
             if (sendToServer)
             {
-                AmongUsClient.Instance.SendOrDisconnect(writer);
             }
             else
             {
-                foreach (var client in AmongUsClient.Instance.AllClients)
-                {
-                    if (client != null && client.ClientId != AmongUsClient.Instance.ClientId)
-                    {
-                        AmongUsClient.Instance.SendOrDisconnect(writer);
-                    }
-                }
+                writer.Recycle();
+                return;
             }
 
             writer.Recycle();

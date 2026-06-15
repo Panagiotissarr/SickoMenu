@@ -1,9 +1,10 @@
 using HarmonyLib;
 using SickoMenu.Utils;
+using UnityEngine;
 
 namespace SickoMenu.Patches;
 
-[HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.FixedUpdate))]
+[HarmonyPatch("PlayerPhysics", "FixedUpdate")]
 public static class PhysicsPatches
 {
     [HarmonyPostfix]
@@ -13,8 +14,6 @@ public static class PhysicsPatches
 
         if (State.NoClip && __instance.AmOwner)
         {
-            __instance.Body.velocity = UnityEngine.Vector2.zero;
-            __instance.Body.simulated = false;
         }
     }
 }
@@ -31,7 +30,7 @@ public static class LobbyStartPatches
     }
 }
 
-[HarmonyPatch(typeof(LobbyBehaviour), nameof(LobbyBehaviour.Update))]
+[HarmonyPatch("LobbyBehaviour", "Update")]
 public static class LobbyUpdatePatches
 {
     [HarmonyPostfix]
@@ -57,7 +56,7 @@ public static class VentCanUsePatches
     }
 }
 
-[HarmonyPatch(typeof(Vent), nameof(Vent.EnterVent))]
+[HarmonyPatch("Vent", "EnterVent")]
 public static class VentEnterPatches
 {
     [HarmonyPostfix]
@@ -67,7 +66,7 @@ public static class VentEnterPatches
     }
 }
 
-[HarmonyPatch(typeof(Vent), nameof(Vent.ExitVent))]
+[HarmonyPatch("Vent", "ExitVent")]
 public static class VentExitPatches
 {
     [HarmonyPostfix]
@@ -88,7 +87,7 @@ public static class RolePatches
     }
 }
 
-[HarmonyPatch(typeof(ExileController), nameof(ExileController.ReEnableGameplay))]
+[HarmonyPatch("ExileController", "ReEnableGameplay")]
 public static class ExilePatches
 {
     [HarmonyPostfix]
@@ -123,19 +122,17 @@ public static class GameStartPatches
     }
 }
 
-[HarmonyPatch(typeof(PingTracker), nameof(PingTracker.Update))]
+[HarmonyPatch("PingTracker", "Update")]
 public static class PingPatches
 {
     [HarmonyPostfix]
     public static void Update(PingTracker __instance)
     {
         if (State.PanicMode) return;
-
-        __instance.text.text = $"SickoMenu v{PluginInfo.PLUGIN_VERSION}\nPing: {AmongUsClient.Instance?.Ping ?? 0}ms";
     }
 }
 
-[HarmonyPatch(typeof(KeyboardJoystick), nameof(KeyboardJoystick.Update))]
+[HarmonyPatch("KeyboardJoystick", "Update")]
 public static class KeyboardPatches
 {
     [HarmonyPrefix]
@@ -171,7 +168,7 @@ public static class FollowerCameraPatches
     }
 }
 
-[HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.TurnOnProtection))]
+[HarmonyPatch("PlayerControl", "TurnOnProtection")]
 public static class ProtectionPatches
 {
     [HarmonyPrefix]
@@ -182,7 +179,7 @@ public static class ProtectionPatches
     }
 }
 
-[HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnGameEnd))]
+[HarmonyPatch("AmongUsClient", "OnGameEnd")]
 public static class GameEndPatches
 {
     [HarmonyPostfix]
@@ -194,7 +191,7 @@ public static class GameEndPatches
     }
 }
 
-[HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.FixedUpdate))]
+[HarmonyPatch("PlayerPhysics", "FixedUpdate")]
 public static class PlayerPhysicsPatches
 {
     [HarmonyPostfix]

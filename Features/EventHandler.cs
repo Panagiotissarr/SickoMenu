@@ -7,12 +7,12 @@ public class GameEventArgs
     public string EventType { get; init; } = "";
     public float Timestamp { get; init; }
     public byte PlayerId { get; init; }
-    public Dictionary<string, object> Data { get; init; } = [];
+    public Dictionary<string, object> Data { get; init; } = new Dictionary<string, object>();
 }
 
 public static class EventHandler
 {
-    private static readonly List<GameEventArgs> _eventHistory = [];
+    private static readonly List<GameEventArgs> _eventHistory = new List<GameEventArgs>();
     private static readonly int MaxEvents = 500;
 
     public static event Action<GameEventArgs>? OnGameEvent;
@@ -26,7 +26,7 @@ public static class EventHandler
             EventType = type,
             Timestamp = UnityEngine.Time.time,
             PlayerId = playerId,
-            Data = data ?? []
+            Data = data ?? new Dictionary<string, object>()
         };
 
         if (_eventHistory.Count >= MaxEvents)

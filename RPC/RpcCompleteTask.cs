@@ -16,7 +16,7 @@ public static class RpcCompleteTaskHandler
                     $"Task completed: P{player.PlayerId} task #{taskIdx}");
 
                 Events.TaskEventHandler.HandleTaskComplete(
-                    player.PlayerId, taskIdx, task.TaskType.ToString());
+                    player.PlayerId, taskIdx, task.Complete.ToString());
 
                 CheckAllTasksComplete(player);
             }

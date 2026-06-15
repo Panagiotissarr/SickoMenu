@@ -4,7 +4,7 @@ namespace SickoMenu.Features;
 
 public static class EspRenderer
 {
-    private static readonly Dictionary<byte, EspPlayerInfo> _playerCache = [];
+    private static readonly Dictionary<byte, EspPlayerInfo> _playerCache = new Dictionary<byte, EspPlayerInfo>();
     private static float _lastCleanup;
 
     public class EspPlayerInfo
@@ -46,7 +46,7 @@ public static class EspRenderer
                     IsImpostor = player.Data.Role != null && player.Data.Role.IsImpostor,
                     IsDead = player.Data.IsDead,
                     IsLocal = player.AmOwner,
-                    Health = player.Data.HealthPercent,
+                    Health = 0f,
                     Distance = PlayerControl.LocalPlayer != null
                         ? UnityEngine.Vector2.Distance(
                             PlayerControl.LocalPlayer.transform.position,

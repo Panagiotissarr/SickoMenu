@@ -36,7 +36,7 @@ public class GameEvent : EventArgs
     public GameEventType Type { get; init; }
     public byte SourcePlayerId { get; init; }
     public byte? TargetPlayerId { get; init; }
-    public Dictionary<string, object> Data { get; init; } = [];
+    public Dictionary<string, object> Data { get; init; } = new Dictionary<string, object>();
     public float Timestamp { get; init; }
     public string CustomType { get; init; } = "";
 }
@@ -45,7 +45,7 @@ public static class GameEventBus
 {
     public static event EventHandler<GameEvent>? OnEvent;
 
-    private static readonly List<GameEvent> EventHistory = [];
+    private static readonly List<GameEvent> EventHistory = new List<GameEvent>();
     private const int MaxHistory = 200;
     private static readonly object LockObj = new();
 
@@ -73,7 +73,7 @@ public static class GameEventBus
             Type = type,
             SourcePlayerId = sourceId,
             TargetPlayerId = targetId,
-            Data = data ?? [],
+            Data = data ?? new Dictionary<string, object>(),
             Timestamp = UnityEngine.Time.time
         });
     }
@@ -86,7 +86,7 @@ public static class GameEventBus
             Type = GameEventType.Custom,
             CustomType = customType,
             SourcePlayerId = sourceId,
-            Data = data ?? [],
+            Data = data ?? new Dictionary<string, object>(),
             Timestamp = UnityEngine.Time.time
         });
     }

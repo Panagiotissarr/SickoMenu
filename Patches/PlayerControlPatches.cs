@@ -1,12 +1,13 @@
 using HarmonyLib;
 using SickoMenu.Utils;
+using UnityEngine;
 
 namespace SickoMenu.Patches;
 
 [HarmonyPatch]
 public static class PlayerControlPatches
 {
-    [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.FixedUpdate))]
+    [HarmonyPatch("PlayerControl", "FixedUpdate")]
     [HarmonyPostfix]
     public static void FixedUpdate(PlayerControl __instance)
     {
@@ -14,7 +15,6 @@ public static class PlayerControlPatches
 
         if (State.NoClip)
         {
-            __instance.CanMove = true;
             __instance.MyPhysics.ResetMoveState();
         }
 
@@ -28,7 +28,7 @@ public static class PlayerControlPatches
         }
     }
 
-    [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.get_CanMove))]
+    [HarmonyPatch("PlayerControl", "get_CanMove")]
     [HarmonyPrefix]
     public static bool CanMove(ref bool __result)
     {
@@ -50,7 +50,7 @@ public static class PlayerControlPatches
 
         if (State.DisableKillAnimation)
         {
-            target.Die(DeathReason.Kill);
+            target.Die(DeathReason.Kill, false);
             __instance.MyPhysics.ResetMoveState();
             return false;
         }
@@ -122,7 +122,6 @@ internal static class SickoChat
         var controller = HudManager.Instance?.Chat;
         if (controller == null) return;
 
-        ColorUtility.TryParseHtmlString(colorHex, out var color);
         controller.AddChat(PlayerControl.LocalPlayer, message);
     }
 }

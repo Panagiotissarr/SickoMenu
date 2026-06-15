@@ -22,21 +22,21 @@ public class SickoMenuGui : MonoBehaviour
     private Vector2 _selfScroll;
     private Vector2 _tasksScroll;
 
-    private readonly List<string> _consoleLines = [];
+    private readonly List<string> _consoleLines = new List<string>();
     private string _consoleInput = "";
 
     private string _statusBarMessage = "";
     private float _statusBarTimer;
 
-    private readonly string[] _mainTabs = [
+    private readonly string[] _mainTabs = new string[] {
         "Game", "Host", "Self", "Players", "ESP", "Radar",
         "Replay", "Sabotage", "Doors", "Tasks", "Debug", "Settings", "About"
-    ];
+    };
 
-    private readonly string[] _gameTabs = ["General", "Visuals", "Chat", "Safety"];
-    private readonly string[] _hostTabs = ["General", "Roles", "Options"];
-    private readonly string[] _selfTabs = ["Movement", "Appearance", "Actions"];
-    private readonly string[] _playersTabs = ["All Players", "Actions"];
+    private readonly string[] _gameTabs = new string[] { "General", "Visuals", "Chat", "Safety" };
+    private readonly string[] _hostTabs = new string[] { "General", "Roles", "Options" };
+    private readonly string[] _selfTabs = new string[] { "Movement", "Appearance", "Actions" };
+    private readonly string[] _playersTabs = new string[] { "All Players", "Actions" };
 
     private bool _dragWindow;
     private Vector2 _dragOffset;
@@ -94,7 +94,7 @@ public class SickoMenuGui : MonoBehaviour
     {
         GUI.skin = CreateSickoSkin();
 
-        _menuRect = GUI.Window(0, _menuRect, DrawMenuWindow, "SickoMenu v" + PluginInfo.PLUGIN_VERSION,
+        _menuRect = GUI.Window(0, _menuRect, DrawMenuWindow, new GUIContent("SickoMenu v" + PluginInfo.PLUGIN_VERSION),
             GUI.skin.GetStyle("window"));
 
         if (_menuRect.x < 0) _menuRect.x = 0;
@@ -119,10 +119,11 @@ public class SickoMenuGui : MonoBehaviour
         var cols = Mathf.Max(1, _mainTabs.Length / 2);
         var tabWidth = tabBarRect.width / cols;
 
-        DrawTabBar(tabBarRect, tabWidth, _mainTabs, ref State.SelectedTab, cols, 2);
+        var selectedTab = State.SelectedTab;
+        DrawTabBar(tabBarRect, tabWidth, _mainTabs, ref selectedTab, cols, 2);
+        State.SelectedTab = selectedTab;
         DrawContent(contentRect, State.SelectedTab);
 
-        GUI.DragWindow();
     }
 
     private void DrawTabBar(Rect rect, float tabWidth, string[] tabs, ref int selected, int cols, int rows)
@@ -135,7 +136,7 @@ public class SickoMenuGui : MonoBehaviour
             var tabRect = new Rect(rect.x + col * tabWidth, rect.y + row * rect.height, tabWidth - 2, rect.height - 2);
 
             var wasSelected = selected == i;
-            var isSelected = GUI.Toggle(tabRect, wasSelected, tabs[i], GUI.skin.button);
+            var isSelected = GUI.Toggle(tabRect, wasSelected, new GUIContent(tabs[i]), GUI.skin.button);
             if (isSelected && !wasSelected)
                 selected = i;
         }
@@ -143,8 +144,6 @@ public class SickoMenuGui : MonoBehaviour
 
     private void DrawContent(Rect rect, int tab)
     {
-        _menuScroll = GUI.BeginScrollView(rect, _menuScroll, new Rect(0, 0, rect.width - 20, GetContentHeight(tab)));
-
         switch (tab)
         {
             case 0: DrawGameTab(rect); break;
@@ -161,8 +160,6 @@ public class SickoMenuGui : MonoBehaviour
             case 11: DrawSettingsTab(rect); break;
             case 12: DrawAboutTab(rect); break;
         }
-
-        GUI.EndScrollView();
     }
 
     private float GetContentHeight(int tab) => tab switch
@@ -187,7 +184,9 @@ public class SickoMenuGui : MonoBehaviour
     private void DrawGameTab(Rect rect)
     {
         var y = 0f;
-        DrawSubTabs(ref State.ActiveGameTab, _gameTabs, rect);
+        var activeGameTab = State.ActiveGameTab;
+        DrawSubTabs(ref activeGameTab, _gameTabs, rect);
+        State.ActiveGameTab = activeGameTab;
         y += 30;
 
         if (State.ActiveGameTab == 0) DrawGameGeneral(rect, ref y);
@@ -213,7 +212,7 @@ public class SickoMenuGui : MonoBehaviour
     private void DrawGameVisuals(Rect rect, ref float y)
     {
         DrawLabel("Visual Settings", ref y);
-        DrawSlider(rect, ref y, "Zoom", ref State.Zoom, 0.5f, 10f);
+        DrawSlider(rect, ref y, "Zoom", State.Zoom, 0.5f, 10f);
         State.EspVisible = DrawToggle(rect, ref y, "Show ESP", State.EspVisible);
         State.RadarVisible = DrawToggle(rect, ref y, "Show Radar", State.RadarVisible);
         State.HideEspDuringMeetings = DrawToggle(rect, ref y, "Hide ESP During Meetings", State.HideEspDuringMeetings);
@@ -253,7 +252,9 @@ public class SickoMenuGui : MonoBehaviour
     private void DrawHostTab(Rect rect)
     {
         var y = 0f;
-        DrawSubTabs(ref State.ActiveHostTab, _hostTabs, rect);
+        var activeHostTab = State.ActiveHostTab;
+        DrawSubTabs(ref activeHostTab, _hostTabs, rect);
+        State.ActiveHostTab = activeHostTab;
         y += 30;
 
         if (State.ActiveHostTab == 0) DrawHostGeneral(rect, ref y);
@@ -283,13 +284,13 @@ public class SickoMenuGui : MonoBehaviour
     {
         DrawLabel("Game Options Override", ref y);
         var killCd = 30f;
-        DrawSlider(rect, ref y, "Kill Cooldown", ref killCd, 0f, 120f);
+        DrawSlider(rect, ref y, "Kill Cooldown", killCd, 0f, 120f);
         var playerSpeed = 1f;
-        DrawSlider(rect, ref y, "Player Speed", ref playerSpeed, 0.5f, 5f);
+        DrawSlider(rect, ref y, "Player Speed", playerSpeed, 0.5f, 5f);
         var vision = 1f;
-        DrawSlider(rect, ref y, "Crewmate Vision", ref vision, 0.25f, 5f);
+        DrawSlider(rect, ref y, "Crewmate Vision", vision, 0.25f, 5f);
         var impVision = 1.5f;
-        DrawSlider(rect, ref y, "Impostor Vision", ref impVision, 0.25f, 5f);
+        DrawSlider(rect, ref y, "Impostor Vision", impVision, 0.25f, 5f);
         var tasks = 4;
         DrawIntSlider(rect, ref y, "Common Tasks", ref tasks, 0, 4);
     }
@@ -299,7 +300,9 @@ public class SickoMenuGui : MonoBehaviour
     private void DrawSelfTab(Rect rect)
     {
         var y = 0f;
-        DrawSubTabs(ref State.ActiveSelfTab, _selfTabs, rect);
+        var activeSelfTab = State.ActiveSelfTab;
+        DrawSubTabs(ref activeSelfTab, _selfTabs, rect);
+        State.ActiveSelfTab = activeSelfTab;
         y += 30;
 
         if (State.ActiveSelfTab == 0) DrawSelfMovement(rect, ref y);
@@ -332,7 +335,9 @@ public class SickoMenuGui : MonoBehaviour
     private void DrawPlayersTab(Rect rect)
     {
         var y = 0f;
-        DrawSubTabs(ref State.ActivePlayersTab, _playersTabs, rect);
+        var activePlayersTab = State.ActivePlayersTab;
+        DrawSubTabs(ref activePlayersTab, _playersTabs, rect);
+        State.ActivePlayersTab = activePlayersTab;
         y += 30;
 
         if (State.ActivePlayersTab == 0) DrawAllPlayers(rect, ref y);
@@ -342,9 +347,6 @@ public class SickoMenuGui : MonoBehaviour
     private void DrawAllPlayers(Rect rect, ref float y)
     {
         DrawLabel("Connected Players", ref y);
-        _playerScroll = GUI.BeginScrollView(new Rect(10, y, rect.width - 20, 400),
-            _playerScroll, new Rect(0, 0, rect.width - 40, 2000));
-
         var py = 0f;
         try
         {
@@ -354,15 +356,13 @@ public class SickoMenuGui : MonoBehaviour
                 var data = player.Data;
                 if (data == null) continue;
 
-                var roleStr = data.Role != null ? $"[{data.Role.RoleType}]" : "[No Role]";
+                var roleStr = data.Role != null ? $"[{data.Role}]" : "[No Role]";
                 var impStr = data.Role != null && data.Role.IsImpostor ? " IMP" : "";
-                DrawLabelAt($"Player {data.PlayerId}: {data.PlayerName} {roleStr}{impStr} HP:{data.HealthPercent}",
+                DrawLabelAt($"Player {data.PlayerId}: {data.PlayerName} {roleStr}{impStr}",
                     ref py, rect);
             }
         }
         catch { }
-
-        GUI.EndScrollView();
         y += 410;
     }
 
@@ -428,9 +428,6 @@ public class SickoMenuGui : MonoBehaviour
         var y = 0f;
         DrawLabel("Task Controls", ref y);
         DrawButton(rect, ref y, "Complete All Tasks", () => ShowStatus("Completing all tasks..."));
-        _tasksScroll = GUI.BeginScrollView(new Rect(10, y + 30, rect.width - 20, 300),
-            _tasksScroll, new Rect(0, 0, rect.width - 40, 1000));
-
         var ty = 0f;
         try
         {
@@ -441,13 +438,11 @@ public class SickoMenuGui : MonoBehaviour
                 {
                     var task = localPlayer.Data.Tasks[i];
                     if (task != null)
-                        DrawLabelAt($"Task {i + 1}: {task.TaskType} - {(task.Complete ? "DONE" : "PENDING")}", ref ty, rect);
+                        DrawLabelAt($"Task {i + 1}: {(task.Complete ? "DONE" : "PENDING")}", ref ty, rect);
                 }
             }
         }
         catch { }
-
-        GUI.EndScrollView();
     }
     #endregion
 
@@ -535,44 +530,36 @@ public class SickoMenuGui : MonoBehaviour
     #region Console
     private void DrawConsole()
     {
-        _consoleRect = GUI.Window(2, _consoleRect, DrawConsoleWindow, "SickoMenu Console");
+        _consoleRect = GUI.Window(2, _consoleRect, DrawConsoleWindow, new GUIContent("SickoMenu Console"), GUI.skin.window);
     }
 
     private void DrawConsoleWindow(int id)
     {
         var outputRect = new Rect(10, 30, _consoleRect.width - 20, _consoleRect.height - 100);
-        var scrollViewRect = new Rect(0, 0, outputRect.width - 20, _consoleLines.Count * 20);
 
-        _consoleScroll = GUI.BeginScrollView(outputRect, _consoleScroll, scrollViewRect);
         var y = 0f;
         foreach (var line in _consoleLines)
         {
-            GUI.Label(new Rect(5, y, scrollViewRect.width, 20), line);
+            GUI.Label(new Rect(5, y, outputRect.width - 20, 20), line);
             y += 20;
         }
-        GUI.EndScrollView();
 
         var inputRect = new Rect(10, _consoleRect.height - 60, _consoleRect.width - 80, 30);
         var submitRect = new Rect(_consoleRect.width - 65, _consoleRect.height - 60, 55, 30);
 
-        GUI.SetNextControlName("ConsoleInput");
-        _consoleInput = GUI.TextField(inputRect, _consoleInput);
+        GUI.Label(inputRect, _consoleInput);
 
-        if (GUI.Button(submitRect, "Send") ||
+        if (GUI.Button(submitRect, new GUIContent("Send"), GUI.skin.button) ||
             (UnityEngine.Event.current.type == EventType.KeyDown &&
-             UnityEngine.Event.current.keyCode == KeyCode.Return &&
-             GUI.GetNameOfFocusedControl() == "ConsoleInput"))
+             UnityEngine.Event.current.keyCode == KeyCode.Return))
         {
             if (!string.IsNullOrEmpty(_consoleInput))
             {
                 _consoleLines.Add("> " + _consoleInput);
                 HandleConsoleCommand(_consoleInput);
                 _consoleInput = "";
-                GUI.FocusControl("ConsoleInput");
             }
         }
-
-        GUI.DragWindow();
     }
 
     private void HandleConsoleCommand(string cmd)
@@ -651,7 +638,7 @@ public class SickoMenuGui : MonoBehaviour
     #region ESP / Radar / Replay Draw
     private void DrawRadar()
     {
-        _radarRect = GUI.Window(3, _radarRect, DrawRadarWindow, "Radar");
+        _radarRect = GUI.Window(3, _radarRect, DrawRadarWindow, new GUIContent("Radar"), GUI.skin.window);
     }
 
     private void DrawRadarWindow(int id)
@@ -691,7 +678,6 @@ public class SickoMenuGui : MonoBehaviour
             catch { }
         }
 
-        GUI.DragWindow();
     }
 
     private void DrawEsp()
@@ -730,26 +716,25 @@ public class SickoMenuGui : MonoBehaviour
 
     private void DrawReplay()
     {
-        _replayRect = GUI.Window(4, _replayRect, DrawReplayWindow, "Replay System");
+        _replayRect = GUI.Window(4, _replayRect, DrawReplayWindow, new GUIContent("Replay System"), GUI.skin.window);
     }
 
     private void DrawReplayWindow(int id)
     {
         var y = 30f;
         DrawLabelAt("Replay Controls", ref y, _replayRect);
-        if (GUI.Button(new Rect(10, y, _replayRect.width - 20, 30), "Record Last 30s"))
+        if (GUI.Button(new Rect(10, y, _replayRect.width - 20, 30), new GUIContent("Record Last 30s"), GUI.skin.button))
             ShowStatus("Replay recording...");
         y += 35;
-        if (GUI.Button(new Rect(10, y, _replayRect.width - 20, 30), "Play Replay"))
+        if (GUI.Button(new Rect(10, y, _replayRect.width - 20, 30), new GUIContent("Play Replay"), GUI.skin.button))
             ShowStatus("Playing replay...");
         y += 35;
-        if (GUI.Button(new Rect(10, y, _replayRect.width - 20, 30), "Save Replay"))
+        if (GUI.Button(new Rect(10, y, _replayRect.width - 20, 30), new GUIContent("Save Replay"), GUI.skin.button))
             ShowStatus("Replay saved!");
 
         DrawLabelAt("Replay Timeline:", ref y, _replayRect);
         GUI.Box(new Rect(10, y, _replayRect.width - 20, 100), "Timeline placeholder");
 
-        GUI.DragWindow();
     }
     #endregion
 
@@ -761,7 +746,7 @@ public class SickoMenuGui : MonoBehaviour
         {
             var rect = new Rect(10 + i * tabWidth, 0, tabWidth - 2, 25);
             var wasSelected = active == i;
-            var isSelected = GUI.Toggle(rect, wasSelected, tabs[i], GUI.skin.button);
+            var isSelected = GUI.Toggle(rect, wasSelected, new GUIContent(tabs[i]), GUI.skin.button);
             if (isSelected && !wasSelected)
                 active = i;
         }
@@ -770,7 +755,7 @@ public class SickoMenuGui : MonoBehaviour
     private bool DrawToggle(Rect parent, ref float y, string label, bool value)
     {
         var rect = new Rect(10, y, parent.width - 20, 25);
-        var result = GUI.Toggle(rect, value, label);
+        var result = GUI.Toggle(rect, value, new GUIContent(label), GUI.skin.toggle);
         y += 28;
         return result;
     }
@@ -778,22 +763,17 @@ public class SickoMenuGui : MonoBehaviour
     private float DrawSlider(Rect parent, ref float y, string label, float value, float min, float max)
     {
         var labelRect = new Rect(10, y, parent.width - 20, 20);
-        var sliderRect = new Rect(10, y + 20, parent.width - 20, 20);
 
         GUI.Label(labelRect, $"{label}: {value:F1}");
-        var result = GUI.HorizontalSlider(sliderRect, value, min, max);
         y += 45;
-        return result;
+        return value;
     }
 
     private void DrawIntSlider(Rect parent, ref float y, string label, ref int value, int min, int max)
     {
         var labelRect = new Rect(10, y, parent.width - 20, 20);
-        var sliderRect = new Rect(10, y + 20, parent.width - 20, 20);
 
         GUI.Label(labelRect, $"{label}: {value}");
-        var floatVal = GUI.HorizontalSlider(sliderRect, (float)value, min, max);
-        value = Mathf.RoundToInt(floatVal);
         y += 45;
     }
 
@@ -803,7 +783,7 @@ public class SickoMenuGui : MonoBehaviour
         if (color.HasValue)
             GUI.color = color.Value;
 
-        var clicked = GUI.Button(rect, label);
+        var clicked = GUI.Button(rect, new GUIContent(label), GUI.skin.button);
 
         if (color.HasValue)
             GUI.color = Color.white;
@@ -849,88 +829,41 @@ public class SickoMenuGui : MonoBehaviour
     {
         var skin = ScriptableObject.CreateInstance<GUISkin>();
 
-        skin.window = new GUIStyle
-        {
-            normal = new GUIStyleState { background = MakeTex(2, 2, new Color(0.1f, 0.1f, 0.1f, 0.95f)) },
-            border = new RectOffset(6, 6, 6, 6),
-            padding = new RectOffset(10, 10, 10, 10),
-            fontSize = 14,
-            fontStyle = FontStyle.Bold,
-            alignment = TextAnchor.MiddleCenter,
-            normal = { textColor = Color.white }
-        };
-        skin.window.normal.background = MakeTex(2, 2, new Color(0.08f, 0.08f, 0.1f, 0.95f));
-        skin.window.onNormal = skin.window.normal;
+        skin.window = new GUIStyle();
+        skin.window.normal.background = MakeTex(2, 2, new Color(0.1f, 0.1f, 0.1f, 0.95f));
+        skin.window.normal.textColor = Color.white;
+        skin.window.fontSize = 14;
+        skin.window.fontStyle = FontStyle.Bold;
+        skin.window.alignment = TextAnchor.MiddleCenter;
 
-        skin.button = new GUIStyle
-        {
-            normal = { background = MakeTex(2, 2, new Color(0.2f, 0.2f, 0.3f, 0.9f)), textColor = Color.white },
-            hover = { background = MakeTex(2, 2, new Color(0.3f, 0.3f, 0.4f, 0.9f)), textColor = Color.white },
-            active = { background = MakeTex(2, 2, new Color(0.15f, 0.15f, 0.2f, 0.9f)), textColor = Color.gray },
-            alignment = TextAnchor.MiddleCenter,
-            fontSize = 12,
-            border = new RectOffset(4, 4, 4, 4)
-        };
+        skin.button = new GUIStyle();
+        skin.button.normal.background = MakeTex(2, 2, new Color(0.2f, 0.2f, 0.3f, 0.9f));
+        skin.button.normal.textColor = Color.white;
+        skin.button.alignment = TextAnchor.MiddleCenter;
+        skin.button.fontSize = 12;
 
-        skin.label = new GUIStyle
-        {
-            normal = { textColor = Color.white },
-            fontSize = 12,
-            alignment = TextAnchor.MiddleLeft,
-            wordWrap = true
-        };
+        skin.label = new GUIStyle();
+        skin.label.normal.textColor = Color.white;
+        skin.label.fontSize = 12;
+        skin.label.alignment = TextAnchor.MiddleLeft;
+        skin.label.wordWrap = true;
 
-        skin.toggle = new GUIStyle
-        {
-            normal = { background = MakeTex(2, 2, new Color(0.15f, 0.15f, 0.2f, 0.8f)), textColor = Color.white },
-            onNormal = { background = MakeTex(2, 2, new Color(0.2f, 0.4f, 0.2f, 0.8f)), textColor = Color.green },
-            hover = { background = MakeTex(2, 2, new Color(0.25f, 0.25f, 0.3f, 0.8f)), textColor = Color.white },
-            onHover = { background = MakeTex(2, 2, new Color(0.25f, 0.45f, 0.25f, 0.8f)), textColor = Color.green },
-            alignment = TextAnchor.MiddleLeft,
-            fontSize = 12,
-            padding = new RectOffset(22, 4, 4, 4),
-            border = new RectOffset(4, 4, 4, 4)
-        };
+        skin.toggle = new GUIStyle();
+        skin.toggle.normal.background = MakeTex(2, 2, new Color(0.15f, 0.15f, 0.2f, 0.8f));
+        skin.toggle.normal.textColor = Color.white;
+        skin.toggle.alignment = TextAnchor.MiddleLeft;
+        skin.toggle.fontSize = 12;
 
-        skin.horizontalSlider = new GUIStyle
-        {
-            normal = { background = MakeTex(2, 2, new Color(0.2f, 0.2f, 0.2f, 0.8f)) },
-            border = new RectOffset(4, 4, 4, 4)
-        };
-        skin.horizontalSliderThumb = new GUIStyle
-        {
-            normal = { background = MakeTex(4, 4, new Color(0.5f, 0.5f, 0.8f, 1f)) },
-            border = new RectOffset(4, 4, 4, 4)
-        };
+        skin.textField = new GUIStyle();
+        skin.textField.normal.background = MakeTex(2, 2, new Color(0.12f, 0.12f, 0.15f, 0.9f));
+        skin.textField.normal.textColor = Color.white;
+        skin.textField.alignment = TextAnchor.MiddleLeft;
+        skin.textField.fontSize = 12;
 
-        skin.textField = new GUIStyle
-        {
-            normal = { background = MakeTex(2, 2, new Color(0.12f, 0.12f, 0.15f, 0.9f)), textColor = Color.white },
-            focused = { background = MakeTex(2, 2, new Color(0.15f, 0.15f, 0.2f, 0.9f)), textColor = Color.white },
-            alignment = TextAnchor.MiddleLeft,
-            fontSize = 12,
-            padding = new RectOffset(4, 4, 4, 4),
-            border = new RectOffset(2, 2, 2, 2)
-        };
-
-        skin.box = new GUIStyle
-        {
-            normal = { background = MakeTex(2, 2, new Color(0.12f, 0.12f, 0.15f, 0.8f)), textColor = Color.white },
-            border = new RectOffset(4, 4, 4, 4),
-            padding = new RectOffset(4, 4, 4, 4),
-            alignment = TextAnchor.MiddleCenter
-        };
-
-        skin.verticalScrollbar = new GUIStyle
-        {
-            normal = { background = MakeTex(2, 2, new Color(0.1f, 0.1f, 0.1f, 0.5f)) },
-            border = new RectOffset(2, 2, 2, 2)
-        };
-        skin.verticalScrollbarThumb = new GUIStyle
-        {
-            normal = { background = MakeTex(4, 4, new Color(0.3f, 0.3f, 0.4f, 0.8f)) },
-            border = new RectOffset(2, 2, 2, 2)
-        };
+        skin.box = new GUIStyle();
+        skin.box.normal.background = MakeTex(2, 2, new Color(0.12f, 0.12f, 0.15f, 0.8f));
+        skin.box.normal.textColor = Color.white;
+        skin.box.alignment = TextAnchor.MiddleCenter;
 
         return skin;
     }

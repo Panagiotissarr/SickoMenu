@@ -1,5 +1,5 @@
 using BepInEx;
-using BepInEx.IL2CPP;
+using BepInEx.Unity.IL2CPP;
 using BepInEx.Logging;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
@@ -8,6 +8,7 @@ using SickoMenu.Features;
 using SickoMenu.Gui;
 using SickoMenu.Offsets;
 using SickoMenu.RPC;
+using UnityEngine;
 
 namespace SickoMenu;
 

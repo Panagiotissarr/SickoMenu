@@ -2,7 +2,7 @@ namespace SickoMenu.RPC;
 
 public static class RpcCloseDoorsOfTypeHandler
 {
-    private static readonly Dictionary<SystemTypes, float> DoorCloseTimestamps = [];
+    private static readonly Dictionary<SystemTypes, float> DoorCloseTimestamps = new Dictionary<SystemTypes, float>();
     private const float DoorCooldown = 5f;
 
     public static void Handle(SystemTypes doorType)

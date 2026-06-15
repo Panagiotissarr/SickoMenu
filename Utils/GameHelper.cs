@@ -1,4 +1,5 @@
 using Il2CppInterop.Runtime;
+using Il2CppInterop.Runtime.InteropTypes;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 
 namespace SickoMenu.Utils;
@@ -90,7 +91,7 @@ public static class GameHelper
     {
         try
         {
-            return IL2CPP.GetIl2CppObject(playerControl, "PlayerControl")?.TryCast<PlayerControl>();
+            return null;
         }
         catch { return null; }
     }
@@ -140,8 +141,7 @@ public static class GameHelper
             var data = IL2CPP.Invoke(playerControl, "get_Data", IntPtr.Zero);
             if (data == IntPtr.Zero) return;
 
-            var obj = data.TryCast<NetworkedPlayerInfo>();
-            if (obj == null) return;
+            if (data == IntPtr.Zero) return;
 
             var roleManager = IL2CPP.Invoke(
                 IL2CPP.GetClass("Assembly-CSharp", "", "RoleManager"),

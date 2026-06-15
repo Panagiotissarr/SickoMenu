@@ -14,8 +14,8 @@ public enum AnimationType : byte
 
 public static class RpcPlayAnimationHandler
 {
-    private static readonly Dictionary<byte, AnimationType> LastAnimations = [];
-    private static readonly Dictionary<byte, float> AnimationTimestamps = [];
+    private static readonly Dictionary<byte, AnimationType> LastAnimations = new Dictionary<byte, AnimationType>();
+    private static readonly Dictionary<byte, float> AnimationTimestamps = new Dictionary<byte, float>();
 
     public static void Handle(PlayerControl player, byte animType)
     {

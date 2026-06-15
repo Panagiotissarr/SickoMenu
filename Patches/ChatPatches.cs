@@ -94,16 +94,12 @@ public static class ChatVisiblePatches
     }
 }
 
-[HarmonyPatch(typeof(ChatBubble), nameof(ChatBubble.SetName))]
+[HarmonyPatch("ChatBubble", "SetName")]
 public static class ChatBubblePatches
 {
     [HarmonyPostfix]
-    public static void SetName(ChatBubble __instance, string playerName, bool isDead, bool voted, UnityEngine.Color color)
+    public static void SetName(object __instance, string playerName, bool isDead, bool voted, UnityEngine.Color color)
     {
         if (State.PanicMode) return;
-        if (State.RevealImpostors && __instance != null)
-        {
-            __instance.NameText.color = UnityEngine.Color.red;
-        }
     }
 }

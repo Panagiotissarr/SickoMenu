@@ -2,8 +2,8 @@ namespace SickoMenu.RPC;
 
 public static class RpcMurderPlayerHandler
 {
-    private static readonly Dictionary<byte, int> KillCounters = [];
-    private static readonly Dictionary<byte, float> KillTimestamps = [];
+    private static readonly Dictionary<byte, int> KillCounters = new Dictionary<byte, int>();
+    private static readonly Dictionary<byte, float> KillTimestamps = new Dictionary<byte, float>();
 
     public static void HandleMurder(PlayerControl killer, PlayerControl target,
         MurderResultFlags resultFlags)

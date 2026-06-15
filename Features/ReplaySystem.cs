@@ -5,8 +5,8 @@ namespace SickoMenu.Features;
 public class ReplayFrame
 {
     public float Timestamp { get; set; }
-    public Dictionary<byte, ReplayPlayerState> PlayerStates { get; set; } = [];
-    public List<ReplayEvent> Events { get; set; } = [];
+    public Dictionary<byte, ReplayPlayerState> PlayerStates { get; set; } = new Dictionary<byte, ReplayPlayerState>();
+    public List<ReplayEvent> Events { get; set; } = new List<ReplayEvent>();
 }
 
 public class ReplayPlayerState
@@ -24,13 +24,13 @@ public class ReplayEvent
     public string Type { get; set; } = "";
     public byte PlayerId { get; set; }
     public byte? TargetId { get; set; }
-    public Dictionary<string, string> Data { get; set; } = [];
+    public Dictionary<string, string> Data { get; set; } = new Dictionary<string, string>();
 }
 
 public static class ReplaySystem
 {
-    private static readonly List<ReplayFrame> _recordedFrames = [];
-    private static readonly List<ReplayEvent> _recordedEvents = [];
+    private static readonly List<ReplayFrame> _recordedFrames = new List<ReplayFrame>();
+    private static readonly List<ReplayEvent> _recordedEvents = new List<ReplayEvent>();
     private static bool _isRecording;
     private static bool _isPlaying;
     private static int _playbackIndex;
@@ -109,7 +109,7 @@ public static class ReplaySystem
             Type = type,
             PlayerId = playerId,
             TargetId = targetId,
-            Data = data ?? []
+            Data = data ?? new Dictionary<string, string>()
         });
     }
 

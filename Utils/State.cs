@@ -51,7 +51,7 @@ public static class KeyBinds
     public static UnityEngine.KeyCode NoClipModifier { get; set; } = UnityEngine.KeyCode.LeftControl;
     public static UnityEngine.KeyCode Panic { get; set; } = UnityEngine.KeyCode.Pause;
 
-    private static readonly Dictionary<UnityEngine.KeyCode, bool> KeyStates = [];
+    private static readonly Dictionary<UnityEngine.KeyCode, bool> KeyStates = new Dictionary<UnityEngine.KeyCode, bool>();
 
     public static bool GetKeyDown(UnityEngine.KeyCode key)
     {

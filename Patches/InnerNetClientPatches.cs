@@ -1,4 +1,5 @@
 using HarmonyLib;
+using InnerNet;
 using SickoMenu.Utils;
 
 namespace SickoMenu.Patches;
@@ -27,31 +28,31 @@ public static class InnerNetClientPatches
         }
     }
 
-    [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnGameJoined))]
+    [HarmonyPatch("AmongUsClient", "OnGameJoined")]
     [HarmonyPostfix]
-    public static void OnGameJoined(AmongUsClient __instance, [HarmonyArgument(0)] string gameIdString)
+    public static void OnGameJoined(object __instance, [HarmonyArgument(0)] string gameIdString)
     {
         SickoMenuPlugin.PluginLogger.LogInfo($"Joined game: {gameIdString}");
         State.InGame = true;
         State.InLobby = true;
     }
 
-    [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnPlayerLeft))]
+    [HarmonyPatch("AmongUsClient", "OnPlayerLeft")]
     [HarmonyPostfix]
-    public static void OnPlayerLeft(AmongUsClient __instance, [HarmonyArgument(0)] ClientData data,
-        [HarmonyArgument(1)] DisconnectReasons reason)
+    public static void OnPlayerLeft(object __instance, [HarmonyArgument(0)] object data,
+        [HarmonyArgument(1)] object reason)
     {
-        SickoMenuPlugin.PluginLogger.LogInfo($"Player left: {data?.PlayerName}");
+        SickoMenuPlugin.PluginLogger.LogInfo($"Player left: {data}");
     }
 
-    [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnPlayerJoined))]
+    [HarmonyPatch("AmongUsClient", "OnPlayerJoined")]
     [HarmonyPostfix]
-    public static void OnPlayerJoined(AmongUsClient __instance, [HarmonyArgument(0)] ClientData data)
+    public static void OnPlayerJoined(object __instance, [HarmonyArgument(0)] object data)
     {
-        SickoMenuPlugin.PluginLogger.LogInfo($"Player joined: {data?.PlayerName}");
+        SickoMenuPlugin.PluginLogger.LogInfo($"Player joined: {data}");
     }
 
-    [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnGameEnd))]
+    [HarmonyPatch("AmongUsClient", "OnGameEnd")]
     [HarmonyPostfix]
     public static void OnGameEnd()
     {

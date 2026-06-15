@@ -3,7 +3,7 @@ using SickoMenu.Utils;
 
 namespace SickoMenu.Patches;
 
-[HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.OnEnable))]
+[HarmonyPatch("ShipStatus", "OnEnable")]
 public static class ShipStatusPatches
 {
     [HarmonyPostfix]
@@ -42,7 +42,7 @@ public static class ShipStatusPatches
     }
 }
 
-[HarmonyPatch(typeof(AirshipStatus), nameof(AirshipStatus.OnEnable))]
+[HarmonyPatch("AirshipStatus", "OnEnable")]
 public static class AirshipPatches
 {
     [HarmonyPostfix]
@@ -61,7 +61,7 @@ public static class AirshipPatches
     }
 }
 
-[HarmonyPatch(typeof(FungleShipStatus), nameof(FungleShipStatus.OnEnable))]
+[HarmonyPatch("FungleShipStatus", "OnEnable")]
 public static class FunglePatches
 {
     [HarmonyPostfix]

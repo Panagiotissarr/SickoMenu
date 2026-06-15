@@ -1,5 +1,7 @@
 using HarmonyLib;
+using Hazel;
 using SickoMenu.Utils;
+using UnityEngine;
 
 namespace SickoMenu.Patches;
 
@@ -61,17 +63,17 @@ public static class EOSFriendsPatches
     }
 }
 
-[HarmonyPatch(typeof(EOSManager), nameof(EOSManager.Update))]
+[HarmonyPatch("EOSManager", "Update")]
 public static class EOSUpdatePatches
 {
     [HarmonyPostfix]
-    public static void Update()
+    public static void Update(object __instance)
     {
         if (State.PanicMode) return;
     }
 }
 
-[HarmonyPatch(typeof(EOSManager), nameof(EOSManager.get_ProductUserId))]
+[HarmonyPatch("EOSManager", "get_ProductUserId")]
 public static class EOSUserIdPatches
 {
     [HarmonyPrefix]
@@ -87,7 +89,7 @@ public static class EOSUserIdPatches
     }
 }
 
-[HarmonyPatch(typeof(EOSManager), nameof(EOSManager.UpdatePermissionKeys))]
+[HarmonyPatch("EOSManager", "UpdatePermissionKeys")]
 public static class EOSPermissionPatches
 {
     [HarmonyPrefix]
@@ -162,7 +164,6 @@ public static class VersionShowerPatches
     public static void Start(VersionShower __instance)
     {
         if (State.PanicMode) return;
-        __instance.text.text += $"\nSickoMenu v{PluginInfo.PLUGIN_VERSION}";
     }
 }
 
@@ -178,7 +179,7 @@ public static class TextBoxPatches
     }
 }
 
-[HarmonyPatch(typeof(ChatController), nameof(ChatController.SendFreeChat))]
+[HarmonyPatch("ChatController", "SendFreeChat")]
 public static class SendFreeChatPatches
 {
     [HarmonyPrefix]
@@ -212,7 +213,7 @@ public static class AppearPatches
     }
 }
 
-[HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.SetRoleInvisibility))]
+[HarmonyPatch("PlayerControl", "SetRoleInvisibility")]
 public static class InvisibilityPatches
 {
     [HarmonyPrefix]
@@ -344,11 +345,11 @@ public static class UpdateSystemPatches
     }
 }
 
-[HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.CoSetRole))]
+[HarmonyPatch("PlayerControl", "CoSetRole")]
 public static class CoSetRolePatches
 {
     [HarmonyPostfix]
-    public static void CoSetRole(PlayerControl __instance, RoleTypes role, bool canOverride)
+    public static void CoSetRole(PlayerControl __instance, object role, bool canOverride)
     {
         if (State.PanicMode) return;
         if (__instance.AmOwner)
@@ -367,7 +368,7 @@ public static class SetLevelPatches
     }
 }
 
-[HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.get_Visible))]
+[HarmonyPatch("PlayerControl", "get_Visible")]
 public static class VisiblePatches
 {
     [HarmonyPostfix]
@@ -455,7 +456,7 @@ public static class CastVotePatches
     }
 }
 
-[HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.RpcVotingComplete))]
+[HarmonyPatch("MeetingHud", "RpcVotingComplete")]
 public static class RpcVotingCompletePatches
 {
     [HarmonyPrefix]
@@ -465,7 +466,7 @@ public static class RpcVotingCompletePatches
     }
 }
 
-[HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.CheckForEndVoting))]
+[HarmonyPatch("MeetingHud", "CheckForEndVoting")]
 public static class CheckForEndVotingPatches
 {
     [HarmonyPrefix]
@@ -476,7 +477,7 @@ public static class CheckForEndVotingPatches
     }
 }
 
-[HarmonyPatch(typeof(SaveManager), nameof(SaveManager.GetPurchase))]
+[HarmonyPatch("SaveManager", "GetPurchase")]
 public static class SaveManagerPatches
 {
     [HarmonyPostfix]

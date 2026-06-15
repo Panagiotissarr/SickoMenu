@@ -4,6 +4,7 @@
     <Description>A powerful utility for Among Us designed to enrich your game experience</Description>
     <RootNamespace>SickoMenu</RootNamespace>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <Target Name="CopyToMods" AfterTargets="Build" Condition="Exists('$(AmongUsDir)/BepInEx')">
