@@ -89,56 +89,94 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
-          $unhollowedDir = "AmongUsStub/BepInEx/unhollowed"
-            $searchUrl = "https://nuget.bepinex.dev/v3/search"
+          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+          $unhollowedDir = "AmongUsStub\BepInEx\unhollowed"
+
+          function Download-Package {
+            param($nupkgUrl, $nupkgPath, $extractDir)
+            Write-Host "Download URI: $nupkgUrl"
+            Invoke-WebRequest -Uri $nupkgUrl -OutFile $nupkgPath -ErrorAction Stop
+            Write-Host "Download complete, size: $((Get-Item $nupkgPath).Length) bytes"
+            Expand-Archive -Path $nupkgPath -DestinationPath $extractDir -Force
+            Write-Host "Extracted to: $extractDir"
+            Get-ChildItem -Path $extractDir -Recurse -Filter "*.dll"
+          }
 
           try {
-            # Find AmongUs.GameLibs.Steam package
-            Write-Host "Searching for AmongUs.GameLibs.Steam on BepInEx feed..."
-            $search = Invoke-RestMethod -Uri "$searchUrl?q=AmongUs.GameLibs.Steam&prerelease=true" -ErrorAction Stop
-            $pkg = $search.data | Select-Object -First 1
-
-            if ($null -eq $pkg) {
-              Write-Host "AmongUs.GameLibs.Steam not found on feed!"
+            Write-Host "::notice::Step 1: Test connectivity to nuget.bepinex.dev"
+            try {
+              $test = Invoke-WebRequest -Uri "https://nuget.bepinex.dev/v3/index.json" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+              Write-Host "Connection OK: $($test.StatusCode)"
+            } catch {
+              Write-Host "::error::Cannot reach nuget.bepinex.dev: $_"
+              Write-Host "Trying alternative: flat URL directly..."
+            }
+            
+            # Step 2: Try known version first (hardcoded fallback)
+            Write-Host "::notice::Step 2: Attempt download via NuGet search"
+            $dllFiles = $null
+            
+            # Try NuGet V3 search
+            try {
+              $searchUri = "https://nuget.bepinex.dev/v3/search?q=AmongUs.GameLibs.Steam&prerelease=true"
+              Write-Host "Search: $searchUri"
+              $search = Invoke-RestMethod -Uri $searchUri -UseBasicParsing -ErrorAction Stop
+              $pkg = $search.data | Select-Object -First 1
+              
+              if ($pkg) {
+                $pkgId = $pkg.id.ToLower()
+                $pkgVer = $pkg.version
+                Write-Host "::notice::Found $($pkg.id) v$pkgVer"
+                $nupkgUrl = "https://nuget.bepinex.dev/v3/package/$pkgId/$pkgVer/$pkgId.$pkgVer.nupkg"
+                $nupkgPath = "$env:RUNNER_TEMP\ga_search.nupkg"
+                $extractDir = "$env:RUNNER_TEMP\ga_search"
+                $dllFiles = Download-Package $nupkgUrl $nupkgPath $extractDir
+              }
+            } catch {
+              Write-Host "Search failed: $_"
+            }
+            
+            # Fallback: hardcoded URL
+            if ($null -eq $dllFiles -or $dllFiles.Count -eq 0) {
+              Write-Host "::notice::Trying hardcoded URL..."
+              $nupkgUrl = "https://nuget.bepinex.dev/v3/package/amongus.gamelibs.steam/2026.6.5/amongus.gamelibs.steam.2026.6.5.nupkg"
+              $nupkgPath = "$env:RUNNER_TEMP\ga_fallback.nupkg"
+              $extractDir = "$env:RUNNER_TEMP\ga_fallback"
+              try {
+                $dllFiles = Download-Package $nupkgUrl $nupkgPath $extractDir
+              } catch {
+                Write-Host "::error::Hardcoded URL also failed: $_"
+                throw
+              }
+            }
+            
+            if ($null -eq $dllFiles -or $dllFiles.Count -eq 0) {
+              Write-Host "::error::No DLLs found in package!"
+              if (Test-Path $extractDir) {
+                Get-ChildItem -Path $extractDir -Recurse | ForEach-Object { Write-Host "  $($_.FullName)" }
+              }
               exit 1
             }
-
-            $pkgId = $pkg.id.ToLower()
-            $pkgVer = $pkg.version
-            Write-Host "Found: $($pkg.id) v$pkgVer"
             
-            # Construct nupkg download URL
-            $nupkgUrl = "https://nuget.bepinex.dev/v3/package/$pkgId/$pkgVer/$pkgId.$pkgVer.nupkg"
-            $nupkgPath = "$env:RUNNER_TEMP/gameassemblies.nupkg"
-            
-            Write-Host "Downloading from: $nupkgUrl"
-            Invoke-WebRequest -Uri $nupkgUrl -OutFile $nupkgPath -ErrorAction Stop
-            
-            Write-Host "Extracting..."
-            Expand-Archive -Path $nupkgPath -DestinationPath "$env:RUNNER_TEMP/gameassemblies" -Force
-
-            # Find and copy all DLLs
-            Write-Host "Copying DLLs..."
-            $dllCount = 0
-            Get-ChildItem -Path "$env:RUNNER_TEMP/gameassemblies" -Recurse -Filter "*.dll" | ForEach-Object {
-              $dest = "$unhollowedDir/$($_.Name)"
-              Copy-Item $_.FullName -Destination $dest -Force -ErrorAction Stop
-              $dllCount++
-              Write-Host "  Copied: $($_.Name) ($($_.Length) bytes)"
+            # Step 3: Copy DLLs
+            Write-Host "::notice::Step 3: Copy $($dllFiles.Count) DLLs to $unhollowedDir"
+            foreach ($dll in $dllFiles) {
+              $dest = Join-Path $unhollowedDir $dll.Name
+              Write-Host "  $($dll.Name)"
+              Copy-Item $dll.FullName -Destination $dest -Force -ErrorAction Stop
             }
             
-            Write-Host "Total DLLs copied: $dllCount"
           } catch {
-            Write-Host "ERROR: $_"
+            Write-Host "::error::$($_.Exception.Message)"
             Write-Host "Stack: $($_.ScriptStackTrace)"
             exit 1
           }
 
-          Write-Host "=== Game assemblies in $unhollowedDir ==="
+          Write-Host "::notice::Final: DLLs in $unhollowedDir"
           if (Test-Path $unhollowedDir) {
-            Get-ChildItem $unhollowedDir -Filter "*.dll" | ForEach-Object { Write-Host "  $($_.Name)" }
+            Get-ChildItem $unhollowedDir -Filter "*.dll" | ForEach-Object { Write-Host "  $($_.Name) ($($_.Length) bytes)" }
           } else {
-            Write-Host "Directory does not exist!"
+            Write-Host "::error::Directory $unhollowedDir missing!"
           }
 
       - name: Build
