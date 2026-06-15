@@ -194,7 +194,15 @@ jobs:
           Get-ChildItem "$env:AmongUsDir/BepInEx/unhollowed" -Filter "*.dll" | ForEach-Object { Write-Host "  $($_.Name)" }
 
           Write-Host "=== Building ==="
-          dotnet build -c Release -p:AmongUsDir=$env:AmongUsDir 2>&1
+          $buildOutput = dotnet build -c Release "-p:AmongUsDir=$env:AmongUsDir" 2>&1
+          $exitCode = $LASTEXITCODE
+          Write-Host "Build exit code: $exitCode"
+          Write-Host "=== Build Output (last 60 lines) ==="
+          $buildOutput | Select-Object -Last 60 | ForEach-Object { Write-Host "  $_" }
+          if ($exitCode -ne 0) {
+            Write-Host "::error::dotnet build failed with exit code $exitCode"
+            exit 1
+          }
 
       - name: Package Build
         shell: pwsh
