@@ -95,7 +95,7 @@ jobs:
           try {
             # Find AmongUs.GameLibs.Steam package
             Write-Host "Searching for AmongUs.GameLibs.Steam on BepInEx feed..."
-            $search = Invoke-RestMethod -Uri "$searchUrl/query?q=AmongUs.GameLibs.Steam&prerelease=true" -ErrorAction Stop
+            $search = Invoke-RestMethod -Uri "$searchUrl?q=AmongUs.GameLibs.Steam&prerelease=true" -ErrorAction Stop
             $pkg = $search.data | Select-Object -First 1
 
             if ($null -eq $pkg) {
