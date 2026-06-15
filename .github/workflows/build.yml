@@ -14,6 +14,7 @@ permissions:
 
 env:
   DOTNET_VERSION: '6.0.x'
+  AmongUsDir: ${{ github.workspace }}\AmongUsStub
 
 jobs:
   Build:
@@ -30,144 +31,105 @@ jobs:
       - name: Restore NuGet Packages
         run: dotnet restore
 
+      - name: Setup Assembly Directories
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "AmongUsStub/BepInEx/core" | Out-Null
+          New-Item -ItemType Directory -Force -Path "AmongUsStub/BepInEx/unhollowed" | Out-Null
+
       - name: Download BepInEx 6 IL2CPP
         shell: pwsh
         run: |
-          $bepinexDir = "AmongUsStub/BepInEx/core"
-          New-Item -ItemType Directory -Force -Path $bepinexDir | Out-Null
-          New-Item -ItemType Directory -Force -Path "AmongUsStub/BepInEx/unhollowed" | Out-Null
-
-          # Download BepInEx 6 IL2CPP from GitHub releases
-          $releaseUrl = "https://api.github.com/repos/BepInEx/BepInEx/releases"
-          $releases = Invoke-RestMethod -Uri $releaseUrl -Headers @{"User-Agent"="PowerShell"}
+          $coreDir = "AmongUsStub/BepInEx/core"
           
-          # Find the latest BepInEx 6 IL2CPP pre-release for win-x86
-          $release = $releases | Where-Object {
-            $_.prerelease -eq $true -and
-            $_.tag_name -match "6\.0\.0"
-          } | Select-Object -First 1
-
-          if ($null -eq $release) {
-            # Fallback: try any BepInEx 6 release
-            $release = $releases | Where-Object {
-              $_.tag_name -match "6\."
-            } | Select-Object -First 1
-          }
-
-          if ($null -eq $release) {
-            # Hardcoded fallback URL
-            $downloadUrl = "https://github.com/BepInEx/BepInEx/releases/download/v6.0.0-pre.1/BepInEx-Unity.IL2CPP-win-x86-6.0.0-pre.1.zip"
-          } else {
-            $asset = $release.assets | Where-Object {
-              $_.name -match "IL2CPP" -and $_.name -match "win-x86"
-            } | Select-Object -First 1
-            if ($null -eq $asset) {
-              $asset = $release.assets | Where-Object { $_.name -match "IL2CPP" } | Select-Object -First 1
-            }
-            $downloadUrl = $asset.browser_download_url
-          }
-
-          Write-Host "Downloading BepInEx from: $downloadUrl"
-          Invoke-WebRequest -Uri $downloadUrl -OutFile "$env:RUNNER_TEMP/bepinex.zip"
-          Expand-Archive -Path "$env:RUNNER_TEMP/bepinex.zip" -DestinationPath "BepInExExtract" -Force
+          # Download BepInEx 6 IL2CPP prerelease
+          Write-Host "Downloading BepInEx 6 IL2CPP..."
+          $url = "https://github.com/BepInEx/BepInEx/releases/download/v6.0.0-pre.1/BepInEx-Unity.IL2CPP-win-x86-6.0.0-pre.1.zip"
           
-          # Copy core DLLs
-          if (Test-Path "BepInExExtract/BepInEx/core") {
-            Copy-Item "BepInExExtract/BepInEx/core/*.dll" -Destination $bepinexDir -Force
-          } else {
-            # Try alternative structure
-            Get-ChildItem -Path "BepInExExtract" -Recurse -Filter "BepInEx*.dll" | ForEach-Object {
-              Copy-Item $_.FullName -Destination $bepinexDir -Force
+          try {
+            Invoke-WebRequest -Uri $url -OutFile "$env:RUNNER_TEMP/bepinex.zip" -ErrorAction Stop
+            Expand-Archive -Path "$env:RUNNER_TEMP/bepinex.zip" -DestinationPath "BepInExExtract" -Force
+            
+            # Find core DLLs
+            $coreSrc = "BepInExExtract/BepInEx/core"
+            if (Test-Path $coreSrc) {
+              Copy-Item "$coreSrc/*.dll" -Destination $coreDir -Force
+            } else {
+              # Search recursively
+              Get-ChildItem -Path "BepInExExtract" -Recurse -Filter "*.dll" | ForEach-Object {
+                Copy-Item $_.FullName -Destination $coreDir -Force
+              }
             }
+            
+            Write-Host "BepInEx DLLs downloaded:"
+            Get-ChildItem $coreDir -Filter "*.dll" | ForEach-Object { Write-Host "  $($_.Name) ($($_.Length) bytes)" }
+          } catch {
+            Write-Host "Failed to download BepInEx: $_"
+            exit 1
           }
 
       - name: Download Among Us Game Assemblies
         shell: pwsh
         run: |
           $unhollowedDir = "AmongUsStub/BepInEx/unhollowed"
-
-          # Use AmongUs.GameLibs.Steam from BepInEx NuGet feed
           $feed = "https://nuget.bepinex.dev/v3/index.json"
-          
-          # Search for the package
+
+          # Find AmongUs.GameLibs.Steam package
+          Write-Host "Searching for AmongUs.GameLibs.Steam on BepInEx feed..."
           $search = Invoke-RestMethod -Uri "$feed/query?q=AmongUs.GameLibs.Steam&prerelease=true"
           $pkg = $search.data | Select-Object -First 1
 
           if ($null -ne $pkg) {
             $pkgId = $pkg.id.ToLower()
             $pkgVer = $pkg.version
-            Write-Host "Downloading $pkgId v$pkgVer"
+            Write-Host "Found: $($pkg.id) v$pkgVer"
             
-            $nupkgUrl = "$feed/package/$pkgId/$pkgVer/$pkgId.$pkgVer.nupkg"
+            $nupkgUrl = "https://nuget.bepinex.dev/v3/package/$pkgId/$pkgVer/$pkgId.$pkgVer.nupkg"
             $nupkgPath = "$env:RUNNER_TEMP/$pkgId.nupkg"
+            
+            Invoke-WebRequest -Uri $nupkgUrl -OutFile $nupkgPath
+            Expand-Archive -Path $nupkgPath -DestinationPath "$env:RUNNER_TEMP/$pkgId" -Force
 
-            try {
-              Invoke-WebRequest -Uri $nupkgUrl -OutFile $nupkgPath -ErrorAction Stop
-              Expand-Archive -Path $nupkgPath -DestinationPath "$env:RUNNER_TEMP/$pkgId" -Force
-
-              # Find net6.0 or netstandard assemblies
-              $libPaths = @(
-                "$env:RUNNER_TEMP/$pkgId/lib/net6.0",
-                "$env:RUNNER_TEMP/$pkgId/lib/netstandard2.0",
-                "$env:RUNNER_TEMP/$pkgId/lib/netstandard2.1",
-                "$env:RUNNER_TEMP/$pkgId/lib",
-                "$env:RUNNER_TEMP/$pkgId"
-              )
-
-              $copied = $false
-              foreach ($path in $libPaths) {
-                if (Test-Path $path) {
-                  Get-ChildItem -Path $path -Filter "*.dll" | ForEach-Object {
-                    Copy-Item $_.FullName -Destination $unhollowedDir -Force
-                    Write-Host "  Copied $($_.Name)"
-                    $copied = $true
-                  }
-                  if ($copied) { break }
-                }
-              }
-
-              if (-not $copied) {
-                # Search recursively
-                Get-ChildItem -Path "$env:RUNNER_TEMP/$pkgId" -Recurse -Filter "*.dll" | ForEach-Object {
-                  Copy-Item $_.FullName -Destination $unhollowedDir -Force
-                  Write-Host "  Copied $($_.Name) (from subdir)"
-                }
-              }
-            } catch {
-              Write-Host "Failed: $_"
+            # Find and copy all DLLs
+            Get-ChildItem -Path "$env:RUNNER_TEMP/$pkgId" -Recurse -Filter "*.dll" | ForEach-Object {
+              $dest = Join-Path $unhollowedDir $_.Name
+              Copy-Item $_.FullName -Destination $dest -Force
             }
           } else {
-            Write-Host "AmongUs.GameLibs.Steam not found on feed"
+            Write-Host "AmongUs.GameLibs.Steam not found!"
+            exit 1
           }
 
-          # Verify what we got
-          Write-Host "=== Assemblies in $unhollowedDir ==="
-          Get-ChildItem -Path $unhollowedDir -Filter "*.dll" | ForEach-Object { Write-Host "  $($_.Name)" }
+          Write-Host "=== Game assemblies ==="
+          Get-ChildItem $unhollowedDir -Filter "*.dll" | ForEach-Object { Write-Host "  $($_.Name) ($($_.Length) bytes)" }
 
       - name: Build
-        run: dotnet build -c Release -p:AmongUsDir=${{ github.workspace }}/AmongUsStub
-
-      - name: List Build Output
         shell: pwsh
         run: |
-          if(Test-Path "bin/Release/net6.0") {
-            Get-ChildItem -Path "bin/Release/net6.0" -Recurse -Filter "*.dll" | ForEach-Object { Write-Host $_.FullName }
-          } else {
-            Write-Host "No output in bin/Release/net6.0"
-            Get-ChildItem -Path "bin" -Recurse -Filter "*.dll" | ForEach-Object { Write-Host "Alt: $($_.FullName)" }
-            if(Test-Path "bin/Release") {
-              Get-ChildItem -Path "bin/Release" -Recurse -Filter "*.dll" | ForEach-Object { Write-Host "  $($_.FullName)" }
-            }
-          }
+          Write-Host "=== Environment ==="
+          Write-Host "AmongUsDir: $env:AmongUsDir"
+          Write-Host "CoreDir exists: $(Test-Path '$env:AmongUsDir/BepInEx/core')"
+          Write-Host "UnhollowedDir exists: $(Test-Path '$env:AmongUsDir/BepInEx/unhollowed')"
+          
+          Write-Host "=== BepInEx core DLLs ==="
+          Get-ChildItem "$env:AmongUsDir/BepInEx/core" -Filter "*.dll" | ForEach-Object { Write-Host "  $($_.Name)" }
+          
+          Write-Host "=== Game DLLs ==="
+          Get-ChildItem "$env:AmongUsDir/BepInEx/unhollowed" -Filter "*.dll" | ForEach-Object { Write-Host "  $($_.Name)" }
+
+          Write-Host "=== Building ==="
+          dotnet build -c Release -p:AmongUsDir=$env:AmongUsDir 2>&1
 
       - name: Package Build
         shell: pwsh
         run: |
-          if(Test-Path "bin/Release/net6.0/SickoMenu.dll") {
-            Compress-Archive -Path "bin/Release/net6.0/SickoMenu.dll" -DestinationPath "SickoMenu-BepInEx-Release.zip" -Force
+          $dllPath = "bin/Release/SickoMenu.dll"
+          if (Test-Path $dllPath) {
+            Compress-Archive -Path $dllPath -DestinationPath "SickoMenu-BepInEx-Release.zip" -Force
+            Write-Host "Build successful! SickoMenu.dll size: $((Get-Item $dllPath).Length) bytes"
           } else {
-            Write-Host "Build failed - SickoMenu.dll not found in expected path"
-            Get-ChildItem -Path "bin" -Recurse -Filter "SickoMenu*" | ForEach-Object { Write-Host "Found: $($_.FullName)" }
+            Write-Host "Build artifact not found at $dllPath"
+            Get-ChildItem -Path "bin" -Recurse -Filter "*.dll" | ForEach-Object { Write-Host "  Found: $($_.FullName)" }
             exit 1
           }
 
@@ -175,8 +137,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: SickoMenu-BepInEx-Release
-          path: |
-            SickoMenu-BepInEx-Release.zip
+          path: SickoMenu-BepInEx-Release.zip
 
   AutoRelease:
     runs-on: ubuntu-latest
