@@ -42,27 +42,44 @@ jobs:
         run: |
           $coreDir = "AmongUsStub/BepInEx/core"
           
-          # Download BepInEx 6 IL2CPP prerelease
           Write-Host "Downloading BepInEx 6 IL2CPP..."
-          $url = "https://github.com/BepInEx/BepInEx/releases/download/v6.0.0-pre.1/BepInEx-Unity.IL2CPP-win-x86-6.0.0-pre.1.zip"
+          
+          # Find latest BepInEx 6 prerelease
+          $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/BepInEx/BepInEx/releases?per_page=10"
+          $release = $releases | Where-Object { $_.prerelease -and $_.tag_name -match "^v6" } | Select-Object -First 1
+          $asset = $release.assets | Where-Object { $_.name -match "IL2CPP" -and $_.name -match "win-x86" } | Select-Object -First 1
+          
+          if ($null -eq $asset) {
+            Write-Host "Could not find BepInEx 6 IL2CPP win-x86 release"
+            exit 1
+          }
+          
+          Write-Host "Found: $($asset.name)"
+          $url = $asset.browser_download_url
           
           try {
             Invoke-WebRequest -Uri $url -OutFile "$env:RUNNER_TEMP/bepinex.zip" -ErrorAction Stop
             Expand-Archive -Path "$env:RUNNER_TEMP/bepinex.zip" -DestinationPath "BepInExExtract" -Force
             
-            # Find core DLLs
+            # Find core DLLs (BepInEx 6 uses BepInEx/core/ directory)
             $coreSrc = "BepInExExtract/BepInEx/core"
             if (Test-Path $coreSrc) {
               Copy-Item "$coreSrc/*.dll" -Destination $coreDir -Force
-            } else {
-              # Search recursively
-              Get-ChildItem -Path "BepInExExtract" -Recurse -Filter "*.dll" | ForEach-Object {
+            }
+            # Also check BepInEx directory for DLLs
+            $bepinexSrc = "BepInExExtract/BepInEx"
+            if (Test-Path $bepinexSrc) {
+              Get-ChildItem -Path $bepinexSrc -Recurse -Filter "*.dll" | ForEach-Object {
                 Copy-Item $_.FullName -Destination $coreDir -Force
               }
             }
+            # Fallback: root level
+            Get-ChildItem -Path "BepInExExtract" -Recurse -Filter "*.dll" | ForEach-Object {
+              Copy-Item $_.FullName -Destination $coreDir -Force
+            }
             
             Write-Host "BepInEx DLLs downloaded:"
-            Get-ChildItem $coreDir -Filter "*.dll" | ForEach-Object { Write-Host "  $($_.Name) ($($_.Length) bytes)" }
+            Get-ChildItem $coreDir -Filter "*.dll" | Sort-Object Name | ForEach-Object { Write-Host "  $($_.Name) ($($_.Length) bytes)" }
           } catch {
             Write-Host "Failed to download BepInEx: $_"
             exit 1
