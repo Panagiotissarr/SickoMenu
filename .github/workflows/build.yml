@@ -27,40 +27,78 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Add BepInEx NuGet Source
-        run: dotnet nuget add source https://nuget.bepinex.dev/v3/index.json -n BepInEx
+      - name: Create AmongUs Stub Directory
+        shell: pwsh
+        run: New-Item -ItemType Directory -Force -Path "AmongUsStub/BepInEx/unhollowed" | Out-Null
 
       - name: Restore NuGet Packages
-        run: dotnet restore SickoMenu.csproj
+        run: dotnet restore
 
-      - name: Download Among Us Publicized Assemblies
+      - name: Download Among Us Game Assemblies from BepInEx NuGet
         shell: pwsh
         run: |
-          # Create stub directory for references
-          New-Item -ItemType Directory -Force -Path "AmongUsStub/BepInEx/unhollowed" | Out-Null
-          New-Item -ItemType Directory -Force -Path "AmongUsStub/BepInEx/core" | Out-Null
+          # BepInEx NuGet feed URL (configured in nuget.config)
+          $feed = "https://nuget.bepinex.dev/v3/index.json"
+          $outputDir = "AmongUsStub/BepInEx/unhollowed"
+
+          # Check if AmongUs assemblies package exists on the feed
+          $searchUrl = "$feed/query?q=AmongUs&prerelease=true"
+          try {
+            $result = Invoke-RestMethod -Uri $searchUrl -ErrorAction SilentlyContinue
+            $found = $false
+            foreach($pkg in $result.data) {
+              if($pkg.id -match "AmongUs" -and $pkg.id -match "Assembly") {
+                Write-Host "Found package: $($pkg.id) v$($pkg.version)"
+                $pkgUrl = "$feed/package/$($pkg.id)/$($pkg.version)"
+                $nupkg = "$env:RUNNER_TEMP/$($pkg.id).nupkg"
+                Invoke-WebRequest -Uri "$feed/flatcontainer/$($pkg.id.ToLower())/$($pkg.version)/$($pkg.id.ToLower()).$($pkg.version).nupkg" -OutFile $nupkg
+                Expand-Archive -Path $nupkg -DestinationPath "$env:RUNNER_TEMP/$($pkg.id)" -Force
+                Copy-Item "$env:RUNNER_TEMP/$($pkg.id)/lib/net6.0/*.dll" -Destination $outputDir -Force
+                $found = $true
+              }
+            }
+            if(-not $found) {
+              Write-Host "No AmongUs assemblies package found on BepInEx feed"
+              Write-Host "Will build without game-specific references (CI stub mode)"
+            }
+          } catch {
+            Write-Host "Could not access BepInEx NuGet feed: $_"
+            Write-Host "Will build without game-specific references (CI stub mode)"
+          }
+
+      - name: Download from nuget.org fallback
+        shell: pwsh
+        run: |
+          $outputDir = "AmongUsStub/BepInEx/unhollowed"
           
-          # Attempt to get Assembly-CSharp from NuGet or build
-          # BepInEx packages include Unity engine forwards but not game assemblies
-          Write-Host "Using BepInEx unity stubs from packages..."
+          # Try to get Il2CppInterop packages (these include Unity engine forwards)
+          $packages = @(
+            @{id="Il2CppInterop.Common";version="1.5.1"},
+            @{id="Il2CppInterop.Runtime";version="1.5.1"},
+            @{id="HarmonyX";version="2.10.1"}
+          )
+          
+          foreach($pkg in $packages) {
+            $nupkg = "$env:RUNNER_TEMP/$($pkg.id).nupkg"
+            $url = "https://www.nuget.org/api/v2/package/$($pkg.id)/$($pkg.version)"
+            try {
+              Invoke-WebRequest -Uri $url -OutFile $nupkg -ErrorAction SilentlyContinue
+              Expand-Archive -Path $nupkg -DestinationPath "$env:RUNNER_TEMP/$($pkg.id)" -Force
+              if(Test-Path "$env:RUNNER_TEMP/$($pkg.id)/lib/net6.0") {
+                Copy-Item "$env:RUNNER_TEMP/$($pkg.id)/lib/net6.0/*.dll" -Destination $outputDir -Force
+              } elseif(Test-Path "$env:RUNNER_TEMP/$($pkg.id)/lib/netstandard2.0") {
+                Copy-Item "$env:RUNNER_TEMP/$($pkg.id)/lib/netstandard2.0/*.dll" -Destination $outputDir -Force
+              } elseif(Test-Path "$env:RUNNER_TEMP/$($pkg.id)/lib/net35") {
+                Copy-Item "$env:RUNNER_TEMP/$($pkg.id)/lib/net35/*.dll" -Destination $outputDir -Force
+              }
+              Write-Host "Downloaded $($pkg.id)"
+            } catch {
+              Write-Host "Failed to download $($pkg.id): $_"
+            }
+          }
 
       - name: Build
-        run: dotnet build SickoMenu.csproj -c Release -p:AmongUsDir=${{ github.workspace }}/AmongUsStub 2>&1
-        continue-on-error: true
-
-      - name: Build (fallback without game refs)
-        if: failure()
-        shell: pwsh
-        run: |
-          # Strip game-specific references and build as BepInEx plugin skeleton
-          $csproj = [xml](Get-Content SickoMenu.csproj)
-          $ns = New-Object System.Xml.XmlNamespaceManager($csproj.NameTable)
-          $ns.AddNamespace("ms", "http://schemas.microsoft.com/developer/msbuild/2003")
-          
-          # Comment out game-specific references
-          $csproj.Save("SickoMenu.csproj")
-          
-          dotnet build SickoMenu.csproj -c Release -p:AmongUsDir=${{ github.workspace }}/AmongUsStub
+        run: dotnet build -c Release -p:AmongUsDir=${{ github.workspace }}/AmongUsStub
 
       - name: List Build Output
         shell: pwsh
@@ -68,6 +106,7 @@ jobs:
           if(Test-Path "bin/Release/net6.0") {
             Get-ChildItem -Path "bin/Release/net6.0" -Recurse -Filter "*.dll" | ForEach-Object { Write-Host $_.FullName }
           } else {
+            Write-Host "No output in bin/Release/net6.0"
             Get-ChildItem -Path "bin" -Recurse -Filter "*.dll" | ForEach-Object { Write-Host "Alt: $($_.FullName)" }
           }
 
@@ -77,11 +116,8 @@ jobs:
           if(Test-Path "bin/Release/net6.0/SickoMenu.dll") {
             Compress-Archive -Path "bin/Release/net6.0/SickoMenu.dll" -DestinationPath "SickoMenu-BepInEx-Release.zip" -Force
           } else {
-            Write-Host "Warning: SickoMenu.dll not found, packaging any available DLLs"
-            Get-ChildItem -Path "bin" -Recurse -Filter "*.dll" | ForEach-Object { $_.FullName }
-            if(Test-Path "bin/Release") {
-              Get-ChildItem -Path "bin/Release" -Recurse -Filter "*.dll" | Compress-Archive -DestinationPath "SickoMenu-BepInEx-Release.zip" -Force
-            }
+            Write-Host "Build failed - SickoMenu.dll not found"
+            exit 1
           }
 
       - name: Upload Build Artifact
@@ -90,8 +126,6 @@ jobs:
           name: SickoMenu-BepInEx-Release
           path: |
             SickoMenu-BepInEx-Release.zip
-            bin/Release/net6.0/SickoMenu.dll
-            *.dll
 
   AutoRelease:
     runs-on: ubuntu-latest

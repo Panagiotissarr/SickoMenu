@@ -20,21 +20,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BepInEx.IL2CPP" Version="6.0.0-be.*" IncludeAssets="compile" />
-    <PackageReference Include="Il2CppInterop.Common" Version="1.4.5" />
-    <PackageReference Include="Il2CppInterop.Runtime" Version="1.4.5" />
+    <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.*" IncludeAssets="compile" />
+    <PackageReference Include="Il2CppInterop.Common" Version="1.5.1" />
+    <PackageReference Include="Il2CppInterop.Runtime" Version="1.5.1" />
     <PackageReference Include="HarmonyX" Version="2.10.1" />
-  </ItemGroup>
-
-  <ItemGroup Condition="Exists('$(AmongUsDir)/BepInEx/unhollowed/Assembly-CSharp.dll')">
-    <Reference Include="Assembly-CSharp" HintPath="$(AmongUsDir)/BepInEx/unhollowed/Assembly-CSharp.dll" Private="false" />
-    <Reference Include="UnityEngine" HintPath="$(AmongUsDir)/BepInEx/unhollowed/UnityEngine.dll" Private="false" />
-    <Reference Include="UnityEngine.CoreModule" HintPath="$(AmongUsDir)/BepInEx/unhollowed/UnityEngine.CoreModule.dll" Private="false" />
-    <Reference Include="UnityEngine.IMGUIModule" HintPath="$(AmongUsDir)/BepInEx/unhollowed/UnityEngine.IMGUIModule.dll" Private="false" />
-    <Reference Include="UnityEngine.InputLegacyModule" HintPath="$(AmongUsDir)/BepInEx/unhollowed/UnityEngine.InputLegacyModule.dll" Private="false" />
-    <Reference Include="UnityEngine.Physics2DModule" HintPath="$(AmongUsDir)/BepInEx/unhollowed/UnityEngine.Physics2DModule.dll" Private="false" />
-    <Reference Include="UnityEngine.TextRenderingModule" HintPath="$(AmongUsDir)/BepInEx/unhollowed/UnityEngine.TextRenderingModule.dll" Private="false" />
-    <Reference Include="UnityEngine.UI" HintPath="$(AmongUsDir)/BepInEx/unhollowed/UnityEngine.UI.dll" Private="false" />
   </ItemGroup>
 
   <Target Name="CopyToMods" AfterTargets="Build" Condition="Exists('$(AmongUsDir)/BepInEx')">
