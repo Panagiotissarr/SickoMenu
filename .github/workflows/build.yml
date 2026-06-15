@@ -88,37 +88,58 @@ jobs:
       - name: Download Among Us Game Assemblies
         shell: pwsh
         run: |
+          $ErrorActionPreference = "Stop"
           $unhollowedDir = "AmongUsStub/BepInEx/unhollowed"
           $feed = "https://nuget.bepinex.dev/v3/index.json"
 
-          # Find AmongUs.GameLibs.Steam package
-          Write-Host "Searching for AmongUs.GameLibs.Steam on BepInEx feed..."
-          $search = Invoke-RestMethod -Uri "$feed/query?q=AmongUs.GameLibs.Steam&prerelease=true"
-          $pkg = $search.data | Select-Object -First 1
+          try {
+            # Find AmongUs.GameLibs.Steam package
+            Write-Host "Searching for AmongUs.GameLibs.Steam on BepInEx feed..."
+            $search = Invoke-RestMethod -Uri "$feed/query?q=AmongUs.GameLibs.Steam&prerelease=true" -ErrorAction Stop
+            $pkg = $search.data | Select-Object -First 1
 
-          if ($null -ne $pkg) {
+            if ($null -eq $pkg) {
+              Write-Host "AmongUs.GameLibs.Steam not found on feed!"
+              exit 1
+            }
+
             $pkgId = $pkg.id.ToLower()
             $pkgVer = $pkg.version
             Write-Host "Found: $($pkg.id) v$pkgVer"
             
+            # Construct nupkg download URL
             $nupkgUrl = "https://nuget.bepinex.dev/v3/package/$pkgId/$pkgVer/$pkgId.$pkgVer.nupkg"
-            $nupkgPath = "$env:RUNNER_TEMP/$pkgId.nupkg"
+            $nupkgPath = "$env:RUNNER_TEMP/gameassemblies.nupkg"
             
-            Invoke-WebRequest -Uri $nupkgUrl -OutFile $nupkgPath
-            Expand-Archive -Path $nupkgPath -DestinationPath "$env:RUNNER_TEMP/$pkgId" -Force
+            Write-Host "Downloading from: $nupkgUrl"
+            Invoke-WebRequest -Uri $nupkgUrl -OutFile $nupkgPath -ErrorAction Stop
+            
+            Write-Host "Extracting..."
+            Expand-Archive -Path $nupkgPath -DestinationPath "$env:RUNNER_TEMP/gameassemblies" -Force
 
             # Find and copy all DLLs
-            Get-ChildItem -Path "$env:RUNNER_TEMP/$pkgId" -Recurse -Filter "*.dll" | ForEach-Object {
-              $dest = Join-Path $unhollowedDir $_.Name
-              Copy-Item $_.FullName -Destination $dest -Force
+            Write-Host "Copying DLLs..."
+            $dllCount = 0
+            Get-ChildItem -Path "$env:RUNNER_TEMP/gameassemblies" -Recurse -Filter "*.dll" | ForEach-Object {
+              $dest = "$unhollowedDir/$($_.Name)"
+              Copy-Item $_.FullName -Destination $dest -Force -ErrorAction Stop
+              $dllCount++
+              Write-Host "  Copied: $($_.Name) ($($_.Length) bytes)"
             }
-          } else {
-            Write-Host "AmongUs.GameLibs.Steam not found!"
+            
+            Write-Host "Total DLLs copied: $dllCount"
+          } catch {
+            Write-Host "ERROR: $_"
+            Write-Host "Stack: $($_.ScriptStackTrace)"
             exit 1
           }
 
-          Write-Host "=== Game assemblies ==="
-          Get-ChildItem $unhollowedDir -Filter "*.dll" | ForEach-Object { Write-Host "  $($_.Name) ($($_.Length) bytes)" }
+          Write-Host "=== Game assemblies in $unhollowedDir ==="
+          if (Test-Path $unhollowedDir) {
+            Get-ChildItem $unhollowedDir -Filter "*.dll" | ForEach-Object { Write-Host "  $($_.Name)" }
+          } else {
+            Write-Host "Directory does not exist!"
+          }
 
       - name: Build
         shell: pwsh
