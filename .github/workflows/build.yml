@@ -90,12 +90,12 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           $unhollowedDir = "AmongUsStub/BepInEx/unhollowed"
-          $feed = "https://nuget.bepinex.dev/v3/index.json"
+            $searchUrl = "https://nuget.bepinex.dev/v3/search"
 
           try {
             # Find AmongUs.GameLibs.Steam package
             Write-Host "Searching for AmongUs.GameLibs.Steam on BepInEx feed..."
-            $search = Invoke-RestMethod -Uri "$feed/query?q=AmongUs.GameLibs.Steam&prerelease=true" -ErrorAction Stop
+            $search = Invoke-RestMethod -Uri "$searchUrl/query?q=AmongUs.GameLibs.Steam&prerelease=true" -ErrorAction Stop
             $pkg = $search.data | Select-Object -First 1
 
             if ($null -eq $pkg) {
