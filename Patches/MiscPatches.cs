@@ -1,3 +1,4 @@
+using System;
 using HarmonyLib;
 using SickoMenu.Utils;
 using UnityEngine;
@@ -97,7 +98,7 @@ public static class ExilePatches
     }
 }
 
-[HarmonyPatch(typeof(Camera), nameof(Camera.ScreenToWorldPoint))]
+[HarmonyPatch(typeof(Camera), nameof(Camera.ScreenToWorldPoint), new Type[] { typeof(UnityEngine.Vector3) })]
 public static class CameraPatches
 {
     [HarmonyPostfix]
