@@ -1,3 +1,4 @@
+using System;
 using HarmonyLib;
 using Hazel;
 using SickoMenu.Utils;
@@ -286,7 +287,7 @@ public static class RpcSyncSettingsPatches
     }
 }
 
-[HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.UpdateSystem))]
+[HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.UpdateSystem), new Type[] { typeof(SystemTypes), typeof(PlayerControl), typeof(byte) })]
 public static class UpdateSystemPatches
 {
     [HarmonyPrefix]
