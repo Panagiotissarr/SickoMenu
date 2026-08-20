@@ -405,18 +405,6 @@ public static class CheckForEndVotingPatches
     }
 }
 
-[HarmonyPatch(typeof(SaveManager), "GetPurchase")]
-public static class SaveManagerPatches
-{
-    [HarmonyPostfix]
-    public static void GetPurchase(ref bool __result)
-    {
-        if (State.PanicMode) return;
-        if (State.BypassBans)
-            __result = true;
-    }
-}
-
 [HarmonyPatch(typeof(PlayerPurchasesData), "GetPurchase")]
 public static class PlayerPurchasesPatches
 {
