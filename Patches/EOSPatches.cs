@@ -63,33 +63,17 @@ public static class EOSFriendsPatches
     }
 }
 
-[HarmonyPatch("EOSManager", "Update")]
+[HarmonyPatch(typeof(EOSManager), nameof(EOSManager.Update))]
 public static class EOSUpdatePatches
 {
     [HarmonyPostfix]
-    public static void Update(object __instance)
+    public static void Update(EOSManager __instance)
     {
         if (State.PanicMode) return;
     }
 }
 
-[HarmonyPatch("EOSManager", "get_ProductUserId")]
-public static class EOSUserIdPatches
-{
-    [HarmonyPrefix]
-    public static bool get_ProductUserId(ref string __result)
-    {
-        if (State.PanicMode) return true;
-        if (State.BypassBans)
-        {
-            __result = "SickoMenu_SpoofedID";
-            return false;
-        }
-        return true;
-    }
-}
-
-[HarmonyPatch("EOSManager", "UpdatePermissionKeys")]
+[HarmonyPatch(typeof(EOSManager), nameof(EOSManager.UpdatePermissionKeys))]
 public static class EOSPermissionPatches
 {
     [HarmonyPrefix]
@@ -101,7 +85,7 @@ public static class EOSPermissionPatches
     }
 }
 
-[HarmonyPatch(typeof(AccountManager), nameof(AccountManager.UpdateKidAccountDisplay))]
+[HarmonyPatch(typeof(AccountManager), "UpdateKidAccountDisplay")]
 public static class AccountPatches
 {
     [HarmonyPrefix]
@@ -121,43 +105,7 @@ public static class AccountPatches
     }
 }
 
-[HarmonyPatch(typeof(Debug))]
-internal static class DebugPatches
-{
-    [HarmonyPatch(nameof(Debug.Log))]
-    [HarmonyPrefix]
-    public static bool Log(object message)
-    {
-        if (State.PanicMode) return true;
-        return true;
-    }
-
-    [HarmonyPatch(nameof(Debug.LogError))]
-    [HarmonyPrefix]
-    public static bool LogError(object message)
-    {
-        if (State.PanicMode) return true;
-        return true;
-    }
-
-    [HarmonyPatch(nameof(Debug.LogWarning))]
-    [HarmonyPrefix]
-    public static bool LogWarning(object message)
-    {
-        if (State.PanicMode) return true;
-        return true;
-    }
-
-    [HarmonyPatch(nameof(Debug.LogException))]
-    [HarmonyPrefix]
-    public static bool LogException(Exception exception)
-    {
-        if (State.PanicMode) return true;
-        return true;
-    }
-}
-
-[HarmonyPatch(typeof(VersionShower), nameof(VersionShower.Start))]
+[HarmonyPatch(typeof(VersionShower), "Start")]
 public static class VersionShowerPatches
 {
     [HarmonyPostfix]
@@ -179,41 +127,46 @@ public static class TextBoxPatches
     }
 }
 
-[HarmonyPatch("ChatController", "SendFreeChat")]
+[HarmonyPatch(typeof(ChatController), "SendFreeChat")]
 public static class SendFreeChatPatches
 {
     [HarmonyPrefix]
-    public static bool SendFreeChat()
+    public static bool SendFreeChat(ChatController __instance)
     {
         if (State.PanicMode) return true;
-        if (State.FreeChat) return true;
+        if (State.FreeChat)
+        {
+            string text = __instance.freeChatField.Text;
+            PlayerControl.LocalPlayer.RpcSendChat(text);
+            return false;
+        }
         return true;
     }
 }
 
-[HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.CmdCheckVanish))]
+[HarmonyPatch(typeof(PlayerControl), "CheckVanish")]
 public static class VanishPatches
 {
     [HarmonyPrefix]
-    public static bool CmdCheckVanish()
+    public static bool CheckVanish()
     {
         if (State.PanicMode) return true;
         return true;
     }
 }
 
-[HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.CmdCheckAppear))]
+[HarmonyPatch(typeof(PlayerControl), "CheckAppear")]
 public static class AppearPatches
 {
     [HarmonyPrefix]
-    public static bool CmdCheckAppear()
+    public static bool CheckAppear()
     {
         if (State.PanicMode) return true;
         return true;
     }
 }
 
-[HarmonyPatch("PlayerControl", "SetRoleInvisibility")]
+[HarmonyPatch(typeof(PlayerControl), "SetRoleInvisibility")]
 public static class InvisibilityPatches
 {
     [HarmonyPrefix]
@@ -224,11 +177,11 @@ public static class InvisibilityPatches
     }
 }
 
-[HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.CmdCheckProtect))]
+[HarmonyPatch(typeof(PlayerControl), "CheckProtect")]
 public static class ProtectPatches
 {
     [HarmonyPrefix]
-    public static bool CmdCheckProtect()
+    public static bool CheckProtect()
     {
         if (State.PanicMode) return true;
         return true;
@@ -291,7 +244,7 @@ public static class CmdCheckShapeshiftPatches
     }
 }
 
-[HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.ProtectPlayer))]
+[HarmonyPatch(typeof(PlayerControl), "ProtectPlayer")]
 public static class ProtectPlayerPatches
 {
     [HarmonyPrefix]
@@ -345,18 +298,6 @@ public static class UpdateSystemPatches
     }
 }
 
-[HarmonyPatch("PlayerControl", "CoSetRole")]
-public static class CoSetRolePatches
-{
-    [HarmonyPostfix]
-    public static void CoSetRole(PlayerControl __instance, object role, bool canOverride)
-    {
-        if (State.PanicMode) return;
-        if (__instance.AmOwner)
-            SickoMenuPlugin.PluginLogger.LogInfo($"My role: {role}");
-    }
-}
-
 [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.SetLevel))]
 public static class SetLevelPatches
 {
@@ -368,19 +309,7 @@ public static class SetLevelPatches
     }
 }
 
-[HarmonyPatch("PlayerControl", "get_Visible")]
-public static class VisiblePatches
-{
-    [HarmonyPostfix]
-    public static void get_Visible(ref bool __result)
-    {
-        if (State.PanicMode) return;
-        if (State.GhostMode)
-            __result = true;
-    }
-}
-
-[HarmonyPatch(typeof(KillButton), nameof(KillButton.SetTarget))]
+[HarmonyPatch(typeof(KillButton), "SetTarget")]
 public static class KillButtonPatches
 {
     [HarmonyPostfix]
@@ -394,7 +323,7 @@ public static class KillButtonPatches
     }
 }
 
-[HarmonyPatch(typeof(KillOverlay), nameof(KillOverlay.ShowKillAnimation))]
+[HarmonyPatch(typeof(KillOverlay), "ShowKillAnimation")]
 public static class KillOverlayPatches
 {
     [HarmonyPrefix]
@@ -420,7 +349,6 @@ public static class FindClosestTargetPatches
 
         if (State.Wallhack && __result == null)
         {
-            // Find closest player ignoring walls
             var localPlayer = PlayerControl.LocalPlayer;
             if (localPlayer == null) return;
 
@@ -456,7 +384,7 @@ public static class CastVotePatches
     }
 }
 
-[HarmonyPatch("MeetingHud", "RpcVotingComplete")]
+[HarmonyPatch(typeof(MeetingHud), "RpcVotingComplete")]
 public static class RpcVotingCompletePatches
 {
     [HarmonyPrefix]
@@ -466,7 +394,7 @@ public static class RpcVotingCompletePatches
     }
 }
 
-[HarmonyPatch("MeetingHud", "CheckForEndVoting")]
+[HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.CheckForEndVoting))]
 public static class CheckForEndVotingPatches
 {
     [HarmonyPrefix]
@@ -477,7 +405,7 @@ public static class CheckForEndVotingPatches
     }
 }
 
-[HarmonyPatch("SaveManager", "GetPurchase")]
+[HarmonyPatch(typeof(SaveManager), "GetPurchase")]
 public static class SaveManagerPatches
 {
     [HarmonyPostfix]
@@ -489,7 +417,7 @@ public static class SaveManagerPatches
     }
 }
 
-[HarmonyPatch(typeof(PlayerPurchasesData), nameof(PlayerPurchasesData.GetPurchase))]
+[HarmonyPatch(typeof(PlayerPurchasesData), "GetPurchase")]
 public static class PlayerPurchasesPatches
 {
     [HarmonyPostfix]

@@ -54,7 +54,7 @@ public static class OffsetSystem
                 if (entry.ResolvedAddress == IntPtr.Zero)
                     TryAutoResolve(entry);
             }
-            return _offsets.All(o => o.ResolvedAddress != IntPtr.Zero);
+            return _offsets.Count == 0 || _offsets.All(o => o.ResolvedAddress != IntPtr.Zero);
         }
     }
 

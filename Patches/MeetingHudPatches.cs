@@ -1,5 +1,4 @@
 using HarmonyLib;
-using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using SickoMenu.Utils;
 
 namespace SickoMenu.Patches;
@@ -15,21 +14,14 @@ public static class MeetingHudPatches
         State.InMeeting = true;
     }
 
-    [HarmonyPatch("MeetingHud", "PopulateResults")]
+    [HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.Awake))]
     [HarmonyPostfix]
-    public static void PopulateResults(object __instance, [HarmonyArgument(0)] object states)
-    {
-        if (State.PanicMode) return;
-    }
-
-    [HarmonyPatch("MeetingHud", "Awake")]
-    [HarmonyPostfix]
-    public static void Awake(object __instance)
+    public static void Awake(MeetingHud __instance)
     {
         State.InMeeting = true;
     }
 
-    [HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.Close))]
+    [HarmonyPatch(typeof(MeetingHud), "Close")]
     [HarmonyPostfix]
     public static void Close()
     {

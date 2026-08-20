@@ -11,15 +11,10 @@ public static class HudManagerPatches
     {
         if (State.PanicMode) return;
 
-        if (State.MenuVisible || State.ConsoleVisible)
-            __instance.SetHudActive(false);
-        else
-            __instance.SetHudActive(true);
-
         if (State.AlwaysShowChat)
         {
             if (__instance.Chat != null)
-                __instance.Chat.SetVisible(true);
+                __instance.Chat.gameObject.SetActive(true);
         }
     }
 }

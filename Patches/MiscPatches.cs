@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace SickoMenu.Patches;
 
-[HarmonyPatch("PlayerPhysics", "FixedUpdate")]
+[HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.FixedUpdate))]
 public static class PhysicsPatches
 {
     [HarmonyPostfix]
@@ -30,7 +30,7 @@ public static class LobbyStartPatches
     }
 }
 
-[HarmonyPatch("LobbyBehaviour", "Update")]
+[HarmonyPatch(typeof(LobbyBehaviour), nameof(LobbyBehaviour.Update))]
 public static class LobbyUpdatePatches
 {
     [HarmonyPostfix]
@@ -56,7 +56,7 @@ public static class VentCanUsePatches
     }
 }
 
-[HarmonyPatch("Vent", "EnterVent")]
+[HarmonyPatch(typeof(Vent), nameof(Vent.EnterVent))]
 public static class VentEnterPatches
 {
     [HarmonyPostfix]
@@ -66,7 +66,7 @@ public static class VentEnterPatches
     }
 }
 
-[HarmonyPatch("Vent", "ExitVent")]
+[HarmonyPatch(typeof(Vent), nameof(Vent.ExitVent))]
 public static class VentExitPatches
 {
     [HarmonyPostfix]
@@ -76,7 +76,7 @@ public static class VentExitPatches
     }
 }
 
-[HarmonyPatch(typeof(RoleManager), nameof(RoleManager.SelectRoles))]
+[HarmonyPatch(typeof(RoleManager), "SelectRoles")]
 public static class RolePatches
 {
     [HarmonyPostfix]
@@ -112,7 +112,7 @@ public static class CameraPatches
     }
 }
 
-[HarmonyPatch(typeof(GameStartManager), nameof(GameStartManager.Update))]
+[HarmonyPatch(typeof(GameStartManager), "Update")]
 public static class GameStartPatches
 {
     [HarmonyPostfix]
@@ -148,7 +148,7 @@ public static class KeyboardPatches
     }
 }
 
-[HarmonyPatch(typeof(FollowerCamera), nameof(FollowerCamera.Update))]
+[HarmonyPatch(typeof(FollowerCamera), "Update")]
 public static class FollowerCameraPatches
 {
     [HarmonyPrefix]
@@ -179,7 +179,7 @@ public static class ProtectionPatches
     }
 }
 
-[HarmonyPatch("AmongUsClient", "OnGameEnd")]
+[HarmonyPatch(typeof(AmongUsClient), "OnGameEnd")]
 public static class GameEndPatches
 {
     [HarmonyPostfix]
@@ -191,12 +191,4 @@ public static class GameEndPatches
     }
 }
 
-[HarmonyPatch("PlayerPhysics", "FixedUpdate")]
-public static class PlayerPhysicsPatches
-{
-    [HarmonyPostfix]
-    public static void FixedUpdate(PlayerPhysics __instance)
-    {
-        if (State.PanicMode) return;
-    }
-}
+

@@ -18,7 +18,7 @@ public class SickoMenuPlugin : BasePlugin
 {
     public const string PLUGIN_GUID = "dev.sicko.sickomenu";
     public const string PLUGIN_NAME = "SickoMenu";
-    public const string PLUGIN_VERSION = "4.5.2";
+    public const string PLUGIN_VERSION = "4.5.3";
 
     internal static SickoMenuPlugin Instance { get; private set; } = null!;
     internal static ManualLogSource PluginLogger { get; private set; } = null!;
@@ -37,10 +37,7 @@ public class SickoMenuPlugin : BasePlugin
         PluginLogger.LogInfo($"SickoMenu v{PLUGIN_VERSION} loading...");
 
         Utils.IL2CPP.EnsureInitialized();
-
         OffsetSystem.Initialize();
-        var resolved = OffsetSystem.ResolveAll();
-        PluginLogger.LogInfo($"Offsets resolved: {resolved}");
 
         RegisterComponents();
         ApplyPatches();
@@ -48,9 +45,6 @@ public class SickoMenuPlugin : BasePlugin
         CreateGui();
 
         PluginLogger.LogInfo($"SickoMenu v{PLUGIN_VERSION} loaded successfully!");
-
-        if (!resolved)
-            PluginLogger.LogWarning("Some offsets failed to resolve. Some features may not work.");
     }
 
     public override bool Unload()
@@ -106,12 +100,9 @@ public class SickoMenuPlugin : BasePlugin
         HarmonyInstance.PatchAll(typeof(Patches.EOSFreeChatPatches));
         HarmonyInstance.PatchAll(typeof(Patches.EOSFriendsPatches));
         HarmonyInstance.PatchAll(typeof(Patches.EOSUpdatePatches));
-        HarmonyInstance.PatchAll(typeof(Patches.EOSUserIdPatches));
         HarmonyInstance.PatchAll(typeof(Patches.EOSPermissionPatches));
         HarmonyInstance.PatchAll(typeof(Patches.AccountPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.DebugPatches));
         HarmonyInstance.PatchAll(typeof(Patches.FollowerCameraPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.PlayerPhysicsPatches));
         HarmonyInstance.PatchAll(typeof(Patches.ProtectionPatches));
         HarmonyInstance.PatchAll(typeof(Patches.GameEndPatches));
         HarmonyInstance.PatchAll(typeof(Patches.VersionShowerPatches));
@@ -131,9 +122,7 @@ public class SickoMenuPlugin : BasePlugin
         HarmonyInstance.PatchAll(typeof(Patches.CmdReportDeadBodyPatches));
         HarmonyInstance.PatchAll(typeof(Patches.RpcSyncSettingsPatches));
         HarmonyInstance.PatchAll(typeof(Patches.UpdateSystemPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.CoSetRolePatches));
         HarmonyInstance.PatchAll(typeof(Patches.SetLevelPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.VisiblePatches));
         HarmonyInstance.PatchAll(typeof(Patches.KillButtonPatches));
         HarmonyInstance.PatchAll(typeof(Patches.KillOverlayPatches));
         HarmonyInstance.PatchAll(typeof(Patches.FindClosestTargetPatches));

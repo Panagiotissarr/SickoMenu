@@ -1,51 +1,24 @@
 <Project>
-  <!-- Shared build properties for SickoMenu -->
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <LangVersion>10</LangVersion>
+    <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <OutputType>Library</OutputType>
     <AssemblyName>SickoMenu</AssemblyName>
-    <Version>5.0.0</Version>
-    <FileVersion>5.0.0.0</FileVersion>
+    <Version>4.5.3</Version>
+    <FileVersion>4.5.3.0</FileVersion>
     <RootNamespace>SickoMenu</RootNamespace>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(AmongUsDir)' == ''">
+  <PropertyGroup>
     <AmongUsDir>$(MSBuildProjectDirectory)\AmongUsStub</AmongUsDir>
   </PropertyGroup>
 
-  <!-- References from NuGet -->
   <ItemGroup>
-    <PackageReference Include="Il2CppInterop.Common" Version="1.5.1" />
-    <PackageReference Include="Il2CppInterop.Runtime" Version="1.5.1" />
-    <PackageReference Include="HarmonyX" Version="2.10.1" />
-  </ItemGroup>
-
-  <!-- Path-based references: BepInEx core + game assemblies -->
-  <ItemGroup Condition="Exists('$(AmongUsDir)\BepInEx\core\BepInEx.Core.dll')">
-    <Reference Include="BepInEx.Core" HintPath="$(AmongUsDir)\BepInEx\core\BepInEx.Core.dll" Private="False" />
-    <Reference Include="BepInEx.Unity.IL2CPP" HintPath="$(AmongUsDir)\BepInEx\core\BepInEx.Unity.IL2CPP.dll" Private="False" />
-    <Reference Include="BepInEx.Preloader.Core" HintPath="$(AmongUsDir)\BepInEx\core\BepInEx.Preloader.Core.dll" Private="False" />
-    <Reference Include="BepInEx.Unity.Common" HintPath="$(AmongUsDir)\BepInEx\core\BepInEx.Unity.Common.dll" Private="False" />
-    <Reference Include="Mono.Cecil" HintPath="$(AmongUsDir)\BepInEx\core\Mono.Cecil.dll" Private="False" />
-    <Reference Include="MonoMod.RuntimeDetour" HintPath="$(AmongUsDir)\BepInEx\core\MonoMod.RuntimeDetour.dll" Private="False" />
-    <Reference Include="MonoMod.Utils" HintPath="$(AmongUsDir)\BepInEx\core\MonoMod.Utils.dll" Private="False" />
-  </ItemGroup>
-
-  <ItemGroup Condition="Exists('$(AmongUsDir)\BepInEx\unhollowed\Assembly-CSharp.dll')">
-    <Reference Include="Assembly-CSharp" HintPath="$(AmongUsDir)\BepInEx\unhollowed\Assembly-CSharp.dll" Private="False" />
-    <Reference Include="Assembly-CSharp-firstpass" HintPath="$(AmongUsDir)\BepInEx\unhollowed\Assembly-CSharp-firstpass.dll" Private="False" />
-
-    <Reference Include="UnityEngine" HintPath="$(AmongUsDir)\BepInEx\unhollowed\UnityEngine.dll" Private="False" />
-    <Reference Include="UnityEngine.CoreModule" HintPath="$(AmongUsDir)\BepInEx\unhollowed\UnityEngine.CoreModule.dll" Private="False" />
-    <Reference Include="UnityEngine.IMGUIModule" HintPath="$(AmongUsDir)\BepInEx\unhollowed\UnityEngine.IMGUIModule.dll" Private="False" />
-    <Reference Include="UnityEngine.InputLegacyModule" HintPath="$(AmongUsDir)\BepInEx\unhollowed\UnityEngine.InputLegacyModule.dll" Private="False" />
-    <Reference Include="UnityEngine.Physics2DModule" HintPath="$(AmongUsDir)\BepInEx\unhollowed\UnityEngine.Physics2DModule.dll" Private="False" />
-    <Reference Include="UnityEngine.TextRenderingModule" HintPath="$(AmongUsDir)\BepInEx\unhollowed\UnityEngine.TextRenderingModule.dll" Private="False" />
-    <Reference Include="UnityEngine.UI" HintPath="$(AmongUsDir)\BepInEx\unhollowed\UnityEngine.UI.dll" Private="False" />
-    <Reference Include="Hazel" HintPath="$(AmongUsDir)\BepInEx\unhollowed\Hazel.dll" Private="False" />
+    <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.735" Private="false" ExcludeAssets="runtime;native" />
+    <PackageReference Include="AmongUs.GameLibs.Steam" Version="2026.8.18" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.IL2CPP.MSBuild" Version="2.1.0-rc.1" PrivateAssets="all" ExcludeAssets="runtime" />
   </ItemGroup>
 </Project>

@@ -7,15 +7,19 @@ namespace SickoMenu.Patches;
 [HarmonyPatch]
 public static class PlayerControlPatches
 {
-    [HarmonyPatch("PlayerControl", "FixedUpdate")]
+    [HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.FixedUpdate))]
     [HarmonyPostfix]
-    public static void FixedUpdate(PlayerControl __instance)
+    public static void FixedUpdate(PlayerPhysics __instance)
     {
         if (State.PanicMode) return;
 
-        if (State.NoClip)
+        if (State.NoClip && __instance.myPlayer != null && __instance.myPlayer.AmOwner)
         {
-            __instance.MyPhysics.ResetMoveState();
+            var player = __instance.myPlayer;
+            if (player != null && player.Collider != null)
+            {
+                player.Collider.enabled = false;
+            }
         }
 
         if (State.Zoom != 1.0f)
@@ -28,7 +32,7 @@ public static class PlayerControlPatches
         }
     }
 
-    [HarmonyPatch("PlayerControl", "get_CanMove")]
+    [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.CanMove), MethodType.Getter)]
     [HarmonyPrefix]
     public static bool CanMove(ref bool __result)
     {
@@ -50,14 +54,13 @@ public static class PlayerControlPatches
 
         if (State.DisableKillAnimation)
         {
-            target.Die(DeathReason.Kill, false);
             __instance.MyPhysics.ResetMoveState();
             return false;
         }
         return true;
     }
 
-    [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.CompleteTask))]
+    [HarmonyPatch(typeof(PlayerControl), "CompleteTask")]
     [HarmonyPrefix]
     public static bool CompleteTask(PlayerControl __instance, uint idx)
     {
@@ -79,7 +82,7 @@ public static class PlayerControlPatches
         return true;
     }
 
-    [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.RpcSendChat))]
+    [HarmonyPatch(typeof(PlayerControl), "RpcSendChat")]
     [HarmonyPrefix]
     public static bool RpcSendChat(PlayerControl __instance, ref string chatText)
     {
@@ -98,14 +101,14 @@ public static class PlayerControlPatches
         return true;
     }
 
-    [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.StartMeeting))]
+    [HarmonyPatch(typeof(PlayerControl), "StartMeeting")]
     [HarmonyPrefix]
     public static void StartMeeting(PlayerControl __instance, NetworkedPlayerInfo target)
     {
         State.InMeeting = true;
     }
 
-    [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.OnGameStart))]
+    [HarmonyPatch(typeof(PlayerControl), "OnGameStart")]
     [HarmonyPostfix]
     public static void OnGameStart()
     {

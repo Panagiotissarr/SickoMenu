@@ -1,5 +1,4 @@
 using Hazel;
-using SickoMenu.Utils;
 
 namespace SickoMenu.RPC;
 
@@ -95,24 +94,18 @@ public static class RpcHandler
         {
             var localPlayer = PlayerControl.LocalPlayer;
             if (localPlayer == null) return;
+            if (AmongUsClient.Instance == null) return;
 
-            var writer = MessageWriter.Get(SendOption.Reliable);
-            writer.StartMessage(5);
-            writer.Write(localPlayer.NetId);
-            writer.Write(callId);
+            var targetClientId = sendToServer ? -1 : AmongUsClient.Instance.GetClientIdFromCharacter(localPlayer);
+            var writer = AmongUsClient.Instance.StartRpcImmediately(
+                localPlayer.NetId,
+                callId,
+                sendToServer ? SendOption.Reliable : SendOption.None,
+                targetClientId);
+
             writeAction(writer);
-            writer.EndMessage();
 
-            if (sendToServer)
-            {
-            }
-            else
-            {
-                writer.Recycle();
-                return;
-            }
-
-            writer.Recycle();
+            AmongUsClient.Instance.FinishRpcImmediately(writer);
         }
         catch (Exception ex)
         {
@@ -140,7 +133,7 @@ public static class RpcHandler
     {
         SendRpc((byte)CustomRpcCalls.CompleteTask, writer =>
         {
-            writer.Write(taskIdx);
+            writer.WritePacked(taskIdx);
         });
     }
 

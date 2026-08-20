@@ -3,7 +3,7 @@ using SickoMenu.Utils;
 
 namespace SickoMenu.Patches;
 
-[HarmonyPatch("ShipStatus", "OnEnable")]
+[HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.OnEnable))]
 public static class ShipStatusPatches
 {
     [HarmonyPostfix]
@@ -11,12 +11,12 @@ public static class ShipStatusPatches
     {
         State.InGame = true;
         State.InLobby = false;
-        SickoMenuPlugin.PluginLogger.LogInfo($"ShipStatus OnEnable: {__instance?.Type}");
+        SickoMenuPlugin.PluginLogger.LogInfo("ShipStatus OnEnable");
     }
 
     [HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.CalculateLightRadius))]
     [HarmonyPostfix]
-    public static void CalculateLightRadius(ShipStatus __instance, NetworkedPlayerInfo player, ref float __result)
+    public static void CalculateLightRadius(ref float __result)
     {
         if (State.PanicMode) return;
         if (State.Wallhack)
@@ -25,7 +25,7 @@ public static class ShipStatusPatches
 
     [HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.RpcUpdateSystem))]
     [HarmonyPrefix]
-    public static bool RpcUpdateSystem(ShipStatus __instance, SystemTypes systemType, int amount)
+    public static bool RpcUpdateSystem(ShipStatus __instance, SystemTypes systemType, byte amount)
     {
         if (State.PanicMode) return true;
         SickoMenuPlugin.PluginLogger.LogInfo($"RpcUpdateSystem: {systemType} = {amount}");
@@ -42,7 +42,7 @@ public static class ShipStatusPatches
     }
 }
 
-[HarmonyPatch("AirshipStatus", "OnEnable")]
+    [HarmonyPatch(typeof(AirshipStatus), "OnEnable")]
 public static class AirshipPatches
 {
     [HarmonyPostfix]
@@ -51,9 +51,9 @@ public static class AirshipPatches
         State.InGame = true;
     }
 
-    [HarmonyPatch(typeof(AirshipStatus), nameof(AirshipStatus.CalculateLightRadius))]
+    [HarmonyPatch(typeof(AirshipStatus), "CalculateLightRadius")]
     [HarmonyPostfix]
-    public static void CalculateLightRadius(NetworkedPlayerInfo player, ref float __result)
+    public static void CalculateLightRadius(ref float __result)
     {
         if (State.PanicMode) return;
         if (State.Wallhack)
@@ -61,7 +61,7 @@ public static class AirshipPatches
     }
 }
 
-[HarmonyPatch("FungleShipStatus", "OnEnable")]
+[HarmonyPatch(typeof(FungleShipStatus), "OnEnable")]
 public static class FunglePatches
 {
     [HarmonyPostfix]
@@ -71,7 +71,7 @@ public static class FunglePatches
     }
 }
 
-[HarmonyPatch(typeof(SabotageSystemType), nameof(SabotageSystemType.SetInitialSabotageCooldown))]
+[HarmonyPatch(typeof(SabotageSystemType), "SetInitialSabotageCooldown")]
 public static class SabotagePatches
 {
     [HarmonyPrefix]

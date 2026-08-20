@@ -7,8 +7,8 @@ namespace SickoMenu.Patches;
 public static class ChatPatches
 {
     [HarmonyPrefix]
-    public static bool AddChat(ChatController __instance, [HarmonyArgument(0)] PlayerControl sourcePlayer,
-        [HarmonyArgument(1)] ref string chatText)
+    public static bool AddChat(ChatController __instance, PlayerControl sourcePlayer,
+        string chatText)
     {
         if (State.PanicMode) return true;
 
@@ -76,7 +76,7 @@ public static class ChatPatches
         var controller = HudManager.Instance?.Chat;
         if (controller != null)
         {
-            controller.AddChat(PlayerControl.LocalPlayer, message);
+                controller.AddChat(PlayerControl.LocalPlayer, message);
         }
     }
 }
