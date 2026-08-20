@@ -11,7 +11,7 @@ public static class GameHelper
         {
             if (AmongUsClient.Instance == null) return false;
             return AmongUsClient.Instance.GameState == InnerNetClient.GameStates.Started ||
-                   AmongUsClient.Instance.GameState == InnerNetClient.GameStates.Starting;
+                   AmongUsClient.Instance.GameState == InnerNetClient.GameStates.Started;
         }
         catch { return false; }
     }

@@ -129,7 +129,6 @@ public class SickoMenuPlugin : BasePlugin
         HarmonyInstance.PatchAll(typeof(Patches.CastVotePatches));
         HarmonyInstance.PatchAll(typeof(Patches.RpcVotingCompletePatches));
         HarmonyInstance.PatchAll(typeof(Patches.CheckForEndVotingPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.SaveManagerPatches));
         HarmonyInstance.PatchAll(typeof(Patches.PlayerPurchasesPatches));
     }
 

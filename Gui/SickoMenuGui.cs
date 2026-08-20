@@ -94,7 +94,7 @@ public class SickoMenuGui : MonoBehaviour
     {
         GUI.skin = CreateSickoSkin();
 
-        _menuRect = GUI.Window(0, _menuRect, DrawMenuWindow, new GUIContent("SickoMenu v" + PluginInfo.PLUGIN_VERSION),
+        _menuRect = GUI.Window(0, _menuRect, (GUI.WindowFunction)DrawMenuWindow, new GUIContent("SickoMenu v" + PluginInfo.PLUGIN_VERSION),
             GUI.skin.GetStyle("window"));
 
         if (_menuRect.x < 0) _menuRect.x = 0;
@@ -530,7 +530,7 @@ public class SickoMenuGui : MonoBehaviour
     #region Console
     private void DrawConsole()
     {
-        _consoleRect = GUI.Window(2, _consoleRect, DrawConsoleWindow, new GUIContent("SickoMenu Console"), GUI.skin.window);
+        _consoleRect = GUI.Window(2, _consoleRect, (GUI.WindowFunction)DrawConsoleWindow, new GUIContent("SickoMenu Console"), GUI.skin.window);
     }
 
     private void DrawConsoleWindow(int id)
@@ -638,7 +638,7 @@ public class SickoMenuGui : MonoBehaviour
     #region ESP / Radar / Replay Draw
     private void DrawRadar()
     {
-        _radarRect = GUI.Window(3, _radarRect, DrawRadarWindow, new GUIContent("Radar"), GUI.skin.window);
+        _radarRect = GUI.Window(3, _radarRect, (GUI.WindowFunction)DrawRadarWindow, new GUIContent("Radar"), GUI.skin.window);
     }
 
     private void DrawRadarWindow(int id)
@@ -716,7 +716,7 @@ public class SickoMenuGui : MonoBehaviour
 
     private void DrawReplay()
     {
-        _replayRect = GUI.Window(4, _replayRect, DrawReplayWindow, new GUIContent("Replay System"), GUI.skin.window);
+        _replayRect = GUI.Window(4, _replayRect, (GUI.WindowFunction)DrawReplayWindow, new GUIContent("Replay System"), GUI.skin.window);
     }
 
     private void DrawReplayWindow(int id)
