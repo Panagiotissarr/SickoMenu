@@ -1,3 +1,4 @@
+using System;
 using HarmonyLib;
 using SickoMenu.Utils;
 
@@ -23,7 +24,7 @@ public static class ShipStatusPatches
             __result = 100f;
     }
 
-    [HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.RpcUpdateSystem))]
+    [HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.RpcUpdateSystem), argumentTypes: new Type[] { typeof(SystemTypes), typeof(byte) })]
     [HarmonyPrefix]
     public static bool RpcUpdateSystem(ShipStatus __instance, SystemTypes systemType, byte amount)
     {
