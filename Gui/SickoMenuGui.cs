@@ -320,7 +320,7 @@ public class SickoMenuGui : MonoBehaviour
 
         // Search field at top of sidebar
         var searchRect = new Rect(5, y, rect.width - 10, 25);
-        var newSearch = GUI.TextField(searchRect, _searchQuery);
+        var newSearch = GUI.TextField(searchRect, new GUIContent(_searchQuery), GUI.skin.textField);
         if (newSearch != _searchQuery)
         {
             _searchQuery = newSearch;
@@ -1170,7 +1170,7 @@ public class SickoMenuGui : MonoBehaviour
         var inputRect = new Rect(10, _consoleRect.height - 60, _consoleRect.width - 80, 30);
         var submitRect = new Rect(_consoleRect.width - 65, _consoleRect.height - 60, 55, 30);
 
-        _consoleInput = GUI.TextField(inputRect, _consoleInput);
+        _consoleInput = GUI.TextField(inputRect, new GUIContent(_consoleInput), GUI.skin.textField);
 
         if (GUI.Button(submitRect, new GUIContent("Send")) ||
             (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Return))
@@ -1384,7 +1384,7 @@ public class SickoMenuGui : MonoBehaviour
     {
         DrawLabel(label, ref y, parent);
         var rect = new Rect(10, y, parent.width - 20, 25);
-        var result = GUI.TextField(rect, value);
+        var result = GUI.TextField(rect, new GUIContent(value), GUI.skin.textField);
         y += 28;
         return result;
     }
