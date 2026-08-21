@@ -47,6 +47,7 @@ public class SickoMenuGui : MonoBehaviour
     private void Start()
     {
         DontDestroyOnLoad(gameObject);
+        Plugin.PluginLogger.LogInfo("SickoMenuGui component started");
         _consoleLines.Add("SickoMenu v" + PluginInfo.PLUGIN_VERSION + " Console");
         _consoleLines.Add("Type /help for commands");
         _consoleLines.Add("---");
@@ -63,24 +64,45 @@ public class SickoMenuGui : MonoBehaviour
         }
     }
 
+    private bool _loggedFirstGui;
+    private bool _guiErrorLogged;
+
     private void OnGUI()
     {
         if (State.PanicMode) return;
 
-        if (State.MenuVisible)
-            DrawMainMenu();
+        if (!_loggedFirstGui)
+        {
+            _loggedFirstGui = true;
+            Plugin.PluginLogger.LogInfo(
+                $"OnGUI alive (MenuVisible={State.MenuVisible}, Screen={Screen.width}x{Screen.height})");
+        }
 
-        if (State.ConsoleVisible)
-            DrawConsole();
+        try
+        {
+            if (State.MenuVisible)
+                DrawMainMenu();
 
-        if (State.ShowRadar)
-            DrawRadar();
+            if (State.ConsoleVisible)
+                DrawConsole();
 
-        if (State.ShowReplay)
-            DrawReplay();
+            if (State.ShowRadar)
+                DrawRadar();
 
-        if (State.ShowEsp)
-            DrawEsp();
+            if (State.ShowReplay)
+                DrawReplay();
+
+            if (State.ShowEsp)
+                DrawEsp();
+        }
+        catch (Exception ex)
+        {
+            if (!_guiErrorLogged)
+            {
+                _guiErrorLogged = true;
+                Plugin.PluginLogger.LogError("OnGUI error: " + ex);
+            }
+        }
 
         if (_statusBarTimer > 0)
         {
@@ -90,9 +112,12 @@ public class SickoMenuGui : MonoBehaviour
         }
     }
 
+    private GUISkin? _skin;
+
     private void DrawMainMenu()
     {
-        GUI.skin = CreateSickoSkin();
+        if (_skin == null) _skin = CreateSickoSkin();
+        GUI.skin = _skin;
 
         _menuRect = GUI.Window(0, _menuRect, (GUI.WindowFunction)DrawMenuWindow, new GUIContent("SickoMenu v" + PluginInfo.PLUGIN_VERSION),
             GUI.skin.GetStyle("window"));

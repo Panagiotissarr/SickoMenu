@@ -25,7 +25,7 @@ public class SickoMenuPlugin : BasePlugin
     internal static Harmony HarmonyInstance { get; private set; } = null!;
     internal static System.Threading.CancellationTokenSource ShutdownCts { get; private set; } = null!;
 
-    private GameObject? _guiObject;
+    internal static SickoMenuGui? Gui { get; private set; }
 
     public override void Load()
     {
@@ -54,10 +54,10 @@ public class SickoMenuPlugin : BasePlugin
         ShutdownCts.Cancel();
         HarmonyInstance.UnpatchSelf();
 
-        if (_guiObject != null)
+        if (Gui != null)
         {
-            UnityEngine.Object.Destroy(_guiObject);
-            _guiObject = null;
+            UnityEngine.Object.Destroy(Gui);
+            Gui = null;
         }
 
         PluginLogger.LogInfo("SickoMenu unloaded.");
@@ -146,9 +146,10 @@ public class SickoMenuPlugin : BasePlugin
 
     private void CreateGui()
     {
-        _guiObject = new GameObject("SickoMenuGUI");
-        _guiObject.AddComponent<SickoMenuGui>();
-        UnityEngine.Object.DontDestroyOnLoad(_guiObject);
+        // Same pattern as Hydra/MalumMenu: BepInEx's AddComponent<T>() hosts the
+        // component on the persistent "BepInEx_Manager" object (HideAndDontSave),
+        // which survives scene changes without DontDestroyOnLoad.
+        Gui = AddComponent<SickoMenuGui>();
     }
 
     private static void OnGameEvent(object? sender, GameEvent evt)
