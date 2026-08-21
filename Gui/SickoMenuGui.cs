@@ -319,12 +319,14 @@ public class SickoMenuGui : MonoBehaviour
         var y = 0f;
 
         // Search field at top of sidebar
-        var searchRect = new Rect(5, y, rect.width - 10, 25);
-        var newSearch = GUI.TextField(searchRect, _searchQuery, GUI.skin.textField);
+        var searchArea = new Rect(5, y, rect.width - 10, 25);
+        GUI.BeginGroup(searchArea);
+        var newSearch = GUILayout.TextField(_searchQuery, GUI.skin.textField);
         if (newSearch != _searchQuery)
         {
             _searchQuery = newSearch;
         }
+        GUI.EndGroup();
         y += 28;
 
         // If search has content, show results instead of tabs
@@ -1167,10 +1169,12 @@ public class SickoMenuGui : MonoBehaviour
         
         GUI.EndScrollView();
 
-        var inputRect = new Rect(10, _consoleRect.height - 60, _consoleRect.width - 80, 30);
+        var inputArea = new Rect(10, _consoleRect.height - 60, _consoleRect.width - 80, 30);
         var submitRect = new Rect(_consoleRect.width - 65, _consoleRect.height - 60, 55, 30);
 
-        _consoleInput = GUI.TextField(inputRect, _consoleInput, GUI.skin.textField);
+        GUI.BeginGroup(inputArea);
+        _consoleInput = GUILayout.TextField(_consoleInput, GUI.skin.textField);
+        GUI.EndGroup();
 
         if (GUI.Button(submitRect, new GUIContent("Send")) ||
             (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Return))
@@ -1383,8 +1387,10 @@ public class SickoMenuGui : MonoBehaviour
     private string DrawTextField(Rect parent, ref float y, string label, string value)
     {
         DrawLabel(label, ref y, parent);
-        var rect = new Rect(10, y, parent.width - 20, 25);
-        var result = GUI.TextField(rect, value, GUI.skin.textField);
+        var fieldArea = new Rect(10, y, parent.width - 20, 25);
+        GUI.BeginGroup(fieldArea);
+        var result = GUILayout.TextField(value, GUI.skin.textField);
+        GUI.EndGroup();
         y += 28;
         return result;
     }
