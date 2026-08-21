@@ -319,12 +319,13 @@ public static class KillButtonPatches
         if (State.PanicMode) return;
         if (State.Wallhack && target != null)
         {
-            __instance.SetTarget(target);
+            __instance.currentTarget = target;
         }
     }
 }
 
-[HarmonyPatch(typeof(KillOverlay), "ShowKillAnimation")]
+[HarmonyPatch(typeof(KillOverlay), "ShowKillAnimation",
+    new Type[] { typeof(NetworkedPlayerInfo), typeof(NetworkedPlayerInfo) })]
 public static class KillOverlayPatches
 {
     [HarmonyPrefix]
@@ -378,7 +379,7 @@ public static class FindClosestTargetPatches
 public static class CastVotePatches
 {
     [HarmonyPrefix]
-    public static bool CastVote(MeetingHud __instance, byte playerId, byte suspectIdx)
+    public static bool CastVote(MeetingHud __instance)
     {
         if (State.PanicMode) return true;
         return true;
