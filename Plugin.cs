@@ -16,10 +16,6 @@ namespace SickoMenu;
 [BepInProcess("Among Us.exe")]
 public class SickoMenuPlugin : BasePlugin
 {
-    public const string PLUGIN_GUID = "dev.sicko.sickomenu";
-    public const string PLUGIN_NAME = "SickoMenu";
-    public const string PLUGIN_VERSION = "4.5.3";
-
     internal static SickoMenuPlugin Instance { get; private set; } = null!;
     internal static ManualLogSource PluginLogger { get; private set; } = null!;
     internal static Harmony HarmonyInstance { get; private set; } = null!;
@@ -31,10 +27,10 @@ public class SickoMenuPlugin : BasePlugin
     {
         Instance = this;
         PluginLogger = Log;
-        HarmonyInstance = new Harmony(PLUGIN_GUID);
+        HarmonyInstance = new Harmony(PluginInfo.PLUGIN_GUID);
         ShutdownCts = new System.Threading.CancellationTokenSource();
 
-        PluginLogger.LogInfo($"SickoMenu v{PLUGIN_VERSION} loading...");
+        PluginLogger.LogInfo($"SickoMenu v{PluginInfo.PLUGIN_VERSION} loading...");
 
         Utils.IL2CPP.EnsureInitialized();
         OffsetSystem.Initialize();
@@ -44,7 +40,7 @@ public class SickoMenuPlugin : BasePlugin
         InitializeSystems();
         CreateGui();
 
-        PluginLogger.LogInfo($"SickoMenu v{PLUGIN_VERSION} loaded successfully!");
+        PluginLogger.LogInfo($"SickoMenu v{PluginInfo.PLUGIN_VERSION} loaded successfully!");
     }
 
     public override bool Unload()
@@ -71,65 +67,7 @@ public class SickoMenuPlugin : BasePlugin
 
     private void ApplyPatches()
     {
-        HarmonyInstance.PatchAll(typeof(Patches.PlayerControlPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.MeetingHudPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.HudManagerPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.InnerNetClientPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.ShipStatusPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.ChatPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.ChatBubblePatches));
-        HarmonyInstance.PatchAll(typeof(Patches.ChatVisiblePatches));
-        HarmonyInstance.PatchAll(typeof(Patches.PhysicsPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.LobbyStartPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.LobbyUpdatePatches));
-        HarmonyInstance.PatchAll(typeof(Patches.VentCanUsePatches));
-        HarmonyInstance.PatchAll(typeof(Patches.VentEnterPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.VentExitPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.RolePatches));
-        HarmonyInstance.PatchAll(typeof(Patches.ExilePatches));
-        HarmonyInstance.PatchAll(typeof(Patches.CameraPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.GameStartPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.PingPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.AirshipPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.FunglePatches));
-        HarmonyInstance.PatchAll(typeof(Patches.SabotagePatches));
-        HarmonyInstance.PatchAll(typeof(Patches.KeyboardPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.EOSLoginPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.EOSLoginTabPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.EOSInitializePatches));
-        HarmonyInstance.PatchAll(typeof(Patches.EOSFreeChatPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.EOSFriendsPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.EOSUpdatePatches));
-        HarmonyInstance.PatchAll(typeof(Patches.EOSPermissionPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.AccountPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.FollowerCameraPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.ProtectionPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.GameEndPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.VersionShowerPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.TextBoxPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.SendFreeChatPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.VanishPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.AppearPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.InvisibilityPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.ProtectPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.CmdCheckMurderPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.CheckMurderPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.HandleRpcPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.ShapeshiftPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.CmdCheckShapeshiftPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.ProtectPlayerPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.RpcStartMeetingPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.CmdReportDeadBodyPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.RpcSyncSettingsPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.UpdateSystemPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.SetLevelPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.KillButtonPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.KillOverlayPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.FindClosestTargetPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.CastVotePatches));
-        HarmonyInstance.PatchAll(typeof(Patches.RpcVotingCompletePatches));
-        HarmonyInstance.PatchAll(typeof(Patches.CheckForEndVotingPatches));
-        HarmonyInstance.PatchAll(typeof(Patches.PlayerPurchasesPatches));
+        HarmonyInstance.PatchAll();
     }
 
     private static void InitializeSystems()

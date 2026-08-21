@@ -47,7 +47,7 @@ public class SickoMenuGui : MonoBehaviour
     private void Start()
     {
         DontDestroyOnLoad(gameObject);
-        Plugin.PluginLogger.LogInfo("SickoMenuGui component started");
+        SickoMenuPlugin.PluginLogger.LogInfo("SickoMenuGui component started");
         _consoleLines.Add("SickoMenu v" + PluginInfo.PLUGIN_VERSION + " Console");
         _consoleLines.Add("Type /help for commands");
         _consoleLines.Add("---");
@@ -74,7 +74,7 @@ public class SickoMenuGui : MonoBehaviour
         if (!_loggedFirstGui)
         {
             _loggedFirstGui = true;
-            Plugin.PluginLogger.LogInfo(
+            SickoMenuPlugin.PluginLogger.LogInfo(
                 $"OnGUI alive (MenuVisible={State.MenuVisible}, Screen={Screen.width}x{Screen.height})");
         }
 
@@ -100,7 +100,7 @@ public class SickoMenuGui : MonoBehaviour
             if (!_guiErrorLogged)
             {
                 _guiErrorLogged = true;
-                Plugin.PluginLogger.LogError("OnGUI error: " + ex);
+                SickoMenuPlugin.PluginLogger.LogError("OnGUI error: " + ex);
             }
         }
 
